@@ -59,11 +59,14 @@ public class ArticleController {
 
     /**
      * 获取文章详情
+     * eg: http://localhost:8080/articles/6927217ef176e54caba7cb67
+     * 短链接: http://localhost:8080/links/s/加密后的短链接
      * @return 文章详情
      */
-    @GetMapping
+    @SuppressWarnings("all")
+    @GetMapping("{articleId}")
     public Result<Article> getArticleDetail(@RequestHeader(HttpHeader.USER_ID) String userId,
-                                            @RequestParam("articleId") String articleId) {
+                                            @PathVariable("articleId") String articleId) {
         return Result.success(articleService.getArticleDetail(userId, articleId));
     }
 }
