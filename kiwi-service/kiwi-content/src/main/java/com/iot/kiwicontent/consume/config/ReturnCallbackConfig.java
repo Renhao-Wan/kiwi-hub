@@ -11,6 +11,7 @@ import java.nio.charset.StandardCharsets;
 
 /**
  * @author wan
+ * 配置消息发送失败返回的回调
  */
 @Slf4j
 @Configuration

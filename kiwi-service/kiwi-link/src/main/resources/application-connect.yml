@@ -1,18 +1,19 @@
 spring:
   cloud:
     nacos:
-      server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
-      password: ${NACOS_USERNAME:nacos}
-      username: ${NACOS_PASSWORD:nacos}
+      server-addr: 127.0.0.1:8848
+      password: nacos
+      username: nacos
       discovery:
-        namespace: ${NACOS_NAMESPACE:dev}
+        namespace: dev
         group: kiwi-hub
       config:
         import-check:
           enabled: false
-        namespace: ${NACOS_NAMESPACE:dev}
+        namespace: dev
         group: kiwi-hub
   config:
     import:
       - nacos:kiwi-link-redis.yml
       - nacos:kiwi-link-url.yml
+      - nacos:kiwi-knife4j.yml

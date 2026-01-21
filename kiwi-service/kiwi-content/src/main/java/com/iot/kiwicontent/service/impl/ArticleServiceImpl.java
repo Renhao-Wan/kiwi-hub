@@ -26,6 +26,7 @@ import java.util.Map;
 
 /**
  * @author wan
+ * 文章服务实现类
  */
 @Service
 @RequiredArgsConstructor
@@ -60,13 +61,13 @@ public class ArticleServiceImpl implements ArticleService {
         articleRepository.save(article);
         // TODO: RabbitMQ 通知粉丝
         // 通知用户服务增加文章数
-        Map<String, String> message = Map.of(
-                ParameterConstant.AUTHOR_ID, userId,
-                ParameterConstant.ACTION, ParameterConstant.ARTICLE_PUBLISH
-                );
         rabbitTemplate.convertAndSend(
                 RabbitConstant.ARTICLE_USER_EXCHANGE,
-                RabbitConstant.USER_ARTICLE_KEY, message);
+                userId,
+                Map.of(
+                        ParameterConstant.AUTHOR_ID, userId,
+                        ParameterConstant.ACTION, ParameterConstant.ARTICLE_PUBLISH
+                ));
     }
 
     /**
@@ -84,13 +85,13 @@ public class ArticleServiceImpl implements ArticleService {
         }
         articleRepository.deleteById(articleId);
         // RabbitMQ 删除文章数
-        Map<String, String> message = Map.of(
-                ParameterConstant.AUTHOR_ID, userId,
-                ParameterConstant.ACTION, ParameterConstant.ARTICLE_DELETE
-        );
         rabbitTemplate.convertAndSend(
                 RabbitConstant.ARTICLE_USER_EXCHANGE,
-                RabbitConstant.USER_ARTICLE_KEY, message);
+                userId,
+                Map.of(
+                        ParameterConstant.AUTHOR_ID, userId,
+                        ParameterConstant.ACTION, ParameterConstant.ARTICLE_DELETE
+        ));
         return Result.success();
     }
 
@@ -127,7 +128,7 @@ public class ArticleServiceImpl implements ArticleService {
                 .orElse(Article.builder().build());
         // 发送文章浏览事件
         rabbitTemplate.convertAndSend(RabbitConstant.ARTICLE_INTERACTION_EXCHANGE,
-                RabbitConstant.ARTICLE_VIEW_ROUTING_KEY,
+                userId,
                 Map.of(ParameterConstant.ARTICLE_ID, articleId,
                         ParameterConstant.CURRENT_USER_ID, userId,
                         ParameterConstant.ACTION, ParameterConstant.INCREASE));

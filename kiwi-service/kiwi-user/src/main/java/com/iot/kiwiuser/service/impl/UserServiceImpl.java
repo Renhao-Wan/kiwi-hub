@@ -83,7 +83,7 @@ public class UserServiceImpl implements UserService {
         }
         // RabbitMQ推送消息+更新 users 表的统计字段
         rabbitTemplate.convertAndSend(RabbitConstant.USER_RELATION_EXCHANGE,
-                RabbitConstant.USER_RELATION_ROUTING_KEY,
+                userId,
                 Map.of(
                         ParameterConstant.FOLLOWER_ID, userId,
                         ParameterConstant.FOLLOWING_ID, followUserId,
@@ -103,7 +103,7 @@ public class UserServiceImpl implements UserService {
         // 直接删除，数据库自动处理不存在的情况
         userRelationRepository.deleteByFollowerIdAndFollowingId(userId, followUserId);
         rabbitTemplate.convertAndSend(RabbitConstant.USER_RELATION_EXCHANGE,
-                RabbitConstant.USER_RELATION_ROUTING_KEY,
+                userId,
                 Map.of(
                         ParameterConstant.FOLLOWER_ID, userId,
                         ParameterConstant.FOLLOWING_ID, followUserId,

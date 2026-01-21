@@ -52,7 +52,8 @@ public class InteractionServiceImpl implements InteractionService {
             redisTemplate.opsForValue().decrement(countKey);
 
             rabbitTemplate.convertAndSend(RabbitConstant.ARTICLE_INTERACTION_EXCHANGE,
-                    RabbitConstant.ARTICLE_LIKE_ROUTING_KEY, msg);
+                    userId,
+                    msg);
             // 返回当前状态：未赞
             return false;
         } else {
@@ -63,7 +64,8 @@ public class InteractionServiceImpl implements InteractionService {
             redisTemplate.opsForValue().increment(countKey);
 
             rabbitTemplate.convertAndSend(RabbitConstant.ARTICLE_INTERACTION_EXCHANGE,
-                    RabbitConstant.ARTICLE_LIKE_ROUTING_KEY, msg);
+                    userId,
+                    msg);
             // 返回当前状态：已赞
             return true;
         }

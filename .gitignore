@@ -8,6 +8,8 @@
 *.iml
 *.ipr
 .idea/
+.trae
+.trae/**
 
 ### Eclipse ###
 .apt_generated

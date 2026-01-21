@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 /**
+ * 文章服务 RabbitMQ 配置类
  * @author wan
  */
 @Configuration
@@ -26,13 +27,11 @@ public class ArticleRabbitConfig {
                 .build();
     }
 
-
-    // 绑定 RoutingKey
     @Bean
     public Binding articleUserBinding(Queue articleUserQueue, Exchange articleUserExchange) {
         return BindingBuilder.bind(articleUserQueue)
                 .to(articleUserExchange)
-                .with(RabbitConstant.USER_ARTICLE_KEY)
+                .with("#")
                 .noargs();
     }
 }

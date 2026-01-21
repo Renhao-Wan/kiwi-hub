@@ -5,11 +5,6 @@ import org.springframework.amqp.core.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-/**
- * 文章互动消息队列配置类
- * 观看数、点赞数、评论数消息队列配置类
- * @author wan
- */
 @Configuration
 public class ArticleRabbitConfig {
     @Bean
@@ -27,13 +22,11 @@ public class ArticleRabbitConfig {
                 .build();
     }
 
-
-    // 绑定 RoutingKey
     @Bean
     public Binding articleViewBinding(Queue articleViewQueue, Exchange articleInteractionExchange) {
         return BindingBuilder.bind(articleViewQueue)
                 .to(articleInteractionExchange)
-                .with(RabbitConstant.ARTICLE_VIEW_ROUTING_KEY)
+                .with("#")
                 .noargs();
     }
 
@@ -44,13 +37,11 @@ public class ArticleRabbitConfig {
                 .build();
     }
 
-
-    // 绑定 RoutingKey
     @Bean
     public Binding articleLikeBinding(Queue articleLikeQueue, Exchange articleInteractionExchange) {
         return BindingBuilder.bind(articleLikeQueue)
                 .to(articleInteractionExchange)
-                .with(RabbitConstant.ARTICLE_LIKE_ROUTING_KEY)
+                .with("#")
                 .noargs();
     }
 
@@ -61,13 +52,11 @@ public class ArticleRabbitConfig {
                 .build();
     }
 
-
-    // 绑定 RoutingKey
     @Bean
     public Binding articleCommentBinding(Queue articleCommentQueue, Exchange articleInteractionExchange) {
         return BindingBuilder.bind(articleCommentQueue)
                 .to(articleInteractionExchange)
-                .with(RabbitConstant.ARTICLE_COMMENT_ROUTING_KEY)
+                .with("#")
                 .noargs();
     }
 

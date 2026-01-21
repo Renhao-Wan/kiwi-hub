@@ -7,7 +7,3 @@ spring:
   profiles:
     active: dev
     include: connect
-
-# Knife4j 配置
-knife4j:
-  enable: true # 开启 Knife4j 增强功能

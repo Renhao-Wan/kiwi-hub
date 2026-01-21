@@ -15,6 +15,7 @@ import org.springframework.stereotype.Service;
 import java.util.Map;
 
 /**
+ * 文章服务监听器
  * @author wan
  */
 @Service

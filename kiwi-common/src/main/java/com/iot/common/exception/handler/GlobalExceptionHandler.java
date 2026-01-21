@@ -74,7 +74,6 @@ public class GlobalExceptionHandler {
         return Result.result(ResultCodeEnum.DEPENDENCY_SERVICE_UNAVAILABLE);
     }
 
-    // 按理不会出现，在网关就拦截了
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     @ExceptionHandler(value = UnauthorizedRequestException.class)
     public Result<Object> handleNotVerifiedRequestException(UnauthorizedRequestException e) {

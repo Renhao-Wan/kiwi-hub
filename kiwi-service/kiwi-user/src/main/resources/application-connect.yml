@@ -18,4 +18,4 @@ spring:
       - nacos:kiwi-user-redis.yml
       - nacos:kiwi-user-rabbitmq.yml
       - nacos:kiwi-redis-session.yml
-      - nacos:kiwi-cookie-path.yml
+      - nacos:kiwi-knife4j.yml
