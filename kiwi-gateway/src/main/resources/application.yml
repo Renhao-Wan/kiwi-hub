@@ -1,9 +1,0 @@
-server:
-  port: 8090
-
-spring:
-  application:
-    name: kiwi-hub-gateway
-  profiles:
-    active: @spring.profiles.active@
-    include: connect

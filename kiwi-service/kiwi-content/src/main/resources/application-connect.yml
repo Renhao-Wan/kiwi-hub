@@ -1,17 +1,17 @@
 spring:
   cloud:
     nacos:
-      server-addr: @nacos.addr@
-      password: @nacos.password@
-      username: @nacos.username@
+      server-addr: ${NACOS_SERVER_ADDR:127.0.0.1:8848}
+      password: ${NACOS_USERNAME:nacos}
+      username: ${NACOS_PASSWORD:nacos}
       discovery:
-        namespace: @nacos.service.namespace@
-        group: @nacos.service.group@
+        namespace: ${NACOS_NAMESPACE:dev}
+        group: kiwi-hub
       config:
         import-check:
           enabled: false
-        namespace: @nacos.service.namespace@
-        group: @nacos.service.group@
+        namespace: ${NACOS_NAMESPACE:dev}
+        group: kiwi-hub
   config:
     import:
       - nacos:kiwi-content-mongodb.yml

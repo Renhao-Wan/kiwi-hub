@@ -1,0 +1,102 @@
+version: '3.8'
+
+networks:
+  kiwi-net:
+    driver: bridge
+
+services:
+  # ----------------------------------------------------
+  # Nacos 服务 (注册中心 & 配置中心)
+  # ----------------------------------------------------
+  nacos:
+    image: nacos/nacos-server:v2.2.3
+    container_name: nacos-standalone
+    restart: always
+    environment:
+      # 开启单机模式 (最重要的一步)
+      - MODE=standalone
+      # 开启认证 (建议开启，虽然会多占一点点cpu，但安全)
+      # 默认用户名/密码: nacos / nacos
+      - NACOS_AUTH_ENABLE=true
+      # 内部身份识别 Key (随意填)
+      - NACOS_CORE_AUTH_SERVER_IDENTITY_KEY=kiwihub_server_id
+      # 内部身份识别 Value (随意填)
+      - NACOS_CORE_AUTH_SERVER_IDENTITY_VALUE=kiwihub_server_value
+      # Token 密钥 (必须是 Base64 编码且足够长，否则会报错)
+      - NACOS_CORE_AUTH_PLUGIN_NACOS_TOKEN_SECRET_KEY=VGhpc0lzQVNlY3JldEtleUZvck5hY29zVG9rZW5WYWxpZGF0aW9u
+      # 极致 JVM 内存压缩
+      # 默认是 2G/2G，这里我们压到 200M/200M
+      - JVM_XMS=200m
+      - JVM_XMX=200m
+      - JVM_MaxDirectMemorySize=64m # 限制堆外内存
+      - JVM_XMN=128m
+      - JVM_MS=128m
+      - JVM_MMS=256m
+    ports:
+      # Nacos 控制台和 API 端口
+      - "8848:8848"
+      # Nacos 2.x gRPC 端口 (必须暴露，否则服务注册不上)
+      # 9848 = 8848 + 1000
+      - "9848:9848"
+      # - "9849:9849" # 这个端口通常用于集群同步，单机模式可不映射到宿主机，但在容器间网络要通
+    volumes:
+      # 挂载日志，方便排错
+      - ./nacos/logs:/home/nacos/logs
+      # 如果想持久化配置数据，可以取消下面这行的注释
+      # 但如果只是演示，不挂载也行，重启后配置会丢失（内嵌数据库模式）
+      # - ./nacos/data:/home/nacos/data
+    deploy:
+      resources:
+        limits:
+          # Docker 硬限制：如果 Nacos 尝试使用超过 512M 内存，直接杀掉重启
+          # 保护你的 2G 服务器不被它拖垮
+          memory: 512M
+    networks:
+      - kiwi-net
+
+  # ----------------------------------------------------
+  # Nginx (作为网关入口)
+  # ----------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: kiwi-nginx
+    restart: always
+    ports:
+      - "80:80" # 只暴露 80 端口给公网
+    volumes:
+      # 挂载 Nginx 配置文件 (你需要自己创建这个文件)
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      # 挂载静态资源 (比如 Knife4j 的导航页)
+      - ./nginx/html:/usr/share/nginx/html
+      # 挂载日志
+      - ./nginx/logs:/var/log/nginx
+    networks:
+      - kiwi-net
+    depends_on:
+      - nacos
+
+  # 3 个微服务
+  # 照着上面 Nacos 的写法，把 image 换成相应的镜像，
+  # 把 environment 改成 JVM_TOOL_OPTIONS=-Xmx256m
+  kiwi-user:
+    image: kiwi-user:v1
+    container_name: kiwi-user
+    restart: always
+    environment:
+      # 这里对应上面 YAML 里的变量名
+      - NACOS_SERVER_ADDR=nacos:8848
+      # 限制内存（非常重要！）
+      - JVM_TOOL_OPTIONS=-Xms128m -Xmx256m
+      # 修正时区
+      - TZ=Asia/Shanghai
+    ports:
+      - "8081:8081"
+    deploy:
+      resources:
+        limits:
+          # 限制容器最大使用 384M 内存，防止 Java 偷吃
+          memory: 384M
+    networks:
+      - kiwi-net
+    depends_on:
+      - nacos

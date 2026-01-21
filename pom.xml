@@ -16,7 +16,6 @@
     <packaging>pom</packaging>
 
     <modules>
-        <module>kiwi-gateway</module>
         <module>kiwi-common</module>
         <module>kiwi-service</module>
     </modules>
@@ -36,13 +35,6 @@
         <feign-okhttp.version>13.3</feign-okhttp.version>
         <lombok.version>1.18.42</lombok.version>
         <redisson.version>3.30.0</redisson.version>
-
-        <spring.profiles.active>dev</spring.profiles.active>
-        <nacos.addr>127.0.0.1:8848</nacos.addr>
-        <nacos.username>nacos</nacos.username>
-        <nacos.password>nacos</nacos.password>
-        <nacos.service.namespace>${spring.profiles.active}</nacos.service.namespace>
-        <nacos.service.group>kiwi-hub</nacos.service.group>
     </properties>
 
     <dependencyManagement>
@@ -165,15 +157,5 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
-
-    <!--    开启maven资源过滤使之可以使用maven占位符-->
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
-    </build>
 
 </project>
