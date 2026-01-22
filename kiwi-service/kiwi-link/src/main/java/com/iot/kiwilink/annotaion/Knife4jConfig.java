@@ -1,4 +1,4 @@
-package com.iot.common.annotaion;
+package com.iot.kiwilink.annotaion;
 
 import io.swagger.v3.oas.annotations.OpenAPIDefinition;
 import io.swagger.v3.oas.annotations.info.Contact;
@@ -16,8 +16,8 @@ import java.lang.annotation.Target;
  */
 @OpenAPIDefinition(
         info = @Info(
-                title = "用户服务API",
-                description = "用户相关的接口文档",
+                title = "短链接服务API",
+                description = "短链接相关的接口文档",
                 version = "v1.0",
                 contact = @Contact(
                         name = "Renhao-Wan",

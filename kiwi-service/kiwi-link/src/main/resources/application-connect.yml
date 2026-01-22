@@ -16,4 +16,5 @@ spring:
     import:
       - nacos:kiwi-link-redis.yml
       - nacos:kiwi-link-url.yml
+      - nacos:kiwi-redis-session.yml
       - nacos:kiwi-knife4j.yml

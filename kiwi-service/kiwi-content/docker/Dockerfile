@@ -37,7 +37,7 @@ COPY --from=builder /application/application/ ./
 RUN ln -sf /usr/share/zoneinfo/Asia/Shanghai /etc/localtime && echo 'Asia/Shanghai' > /etc/timezone
 
 # 暴露端口 (仅作声明，实际要看 docker-compose)
-EXPOSE 8070
+EXPOSE 8010
 
 # 核心启动命令
 # 使用 Spring 的 JarLauncher 启动，而不是 java -jar

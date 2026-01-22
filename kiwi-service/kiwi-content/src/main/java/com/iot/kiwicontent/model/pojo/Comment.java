@@ -45,4 +45,7 @@ public class Comment {
     @Field("created_at")
     @Schema(description = "评论时间")
     private LocalDateTime createdAt;
+
+    @Schema(description = "评论状态：0-正常, 1-已删除")
+    private Integer status;
 }

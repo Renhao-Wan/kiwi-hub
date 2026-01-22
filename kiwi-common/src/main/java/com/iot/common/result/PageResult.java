@@ -1,7 +1,9 @@
 package com.iot.common.result;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.data.domain.Page;
 
 import java.util.List;
@@ -11,22 +13,24 @@ import java.util.List;
  * @author wan
  */
 @Schema(description = "分页响应结果")
+@AllArgsConstructor(staticName = "of")
+@NoArgsConstructor
 @Data
 public class PageResult<T> {
     @Schema(description = "列表数据")
     private List<T> list;
 
     @Schema(description = "总记录数", example = "100")
-    private long total;
+    private Long total;
 
     @Schema(description = "当前页码", example = "1")
-    private int pageNum;
+    private Integer pageNum;
 
     @Schema(description = "每页大小", example = "10")
-    private int pageSize;
+    private Integer pageSize;
 
     @Schema(description = "总页数", example = "10")
-    private int totalPages;
+    private Integer totalPages;
 
     /**
      * 将分页信息封装到统一的接口

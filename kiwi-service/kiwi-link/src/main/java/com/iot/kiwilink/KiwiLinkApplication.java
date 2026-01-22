@@ -1,7 +1,7 @@
 package com.iot.kiwilink;
 
-import com.iot.common.annotaion.Knife4jConfig;
 import com.iot.common.exception.handler.EnableGlobalExceptionHandler;
+import com.iot.kiwilink.annotaion.Knife4jConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;

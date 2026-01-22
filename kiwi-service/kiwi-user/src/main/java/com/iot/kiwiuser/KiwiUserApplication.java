@@ -1,6 +1,6 @@
 package com.iot.kiwiuser;
 
-import com.iot.common.annotaion.Knife4jConfig;
+import com.iot.kiwiuser.annotaion.Knife4jConfig;
 import com.iot.common.exception.handler.EnableGlobalExceptionHandler;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
