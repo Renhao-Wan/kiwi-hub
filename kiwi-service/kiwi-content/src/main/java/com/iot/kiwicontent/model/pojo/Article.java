@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -29,9 +30,11 @@ public class Article {
     @Schema(description = "作者ID", required = true)
     private String authorId;
 
+    @TextIndexed(weight = 10)
     @Schema(description = "文章标题", required = true)
     private String title;
 
+    @TextIndexed(weight = 3)
     @Schema(description = "文章内容", required = true)
     private String content;
 
@@ -43,6 +46,7 @@ public class Article {
     @Schema(description = "OSS存储的图片/文件URL列表")
     private List<String> ossUrls;
 
+    @TextIndexed(weight = 5)
     @Schema(description = "文章标签列表")
     private List<String> tags;
 

@@ -57,6 +57,31 @@ services:
     networks:
       - kiwi-net
 
+  # ----------------------------------------------------
+  # Nginx (替代 Gateway，作为唯一入口)
+  # ----------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: kiwi-nginx
+    restart: always
+    ports:
+      - "80:80" # 只暴露 80 端口给公网
+    volumes:
+      # 挂载配置文件
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      # 挂载静态资源（文档导航页）
+      - ./nginx/html:/usr/share/nginx/html
+      # 挂载日志
+      - ./nginx/logs:/var/log/nginx
+    environment:
+      - TZ=Asia/Shanghai
+    deploy:
+      resources:
+        limits:
+          memory: 64M # Nginx 非常省内存，64M 绰绰有余
+    networks:
+      - kiwi-net
+
   # 3 个微服务
   kiwi-user:
     image: kiwi-user:v1
@@ -71,8 +96,6 @@ services:
       - JVM_TOOL_OPTIONS=-Xms128m -Xmx256m
       # 修正时区
       - TZ=Asia/Shanghai
-    ports:
-      - "8070:8070"
     deploy:
       resources:
         limits:
@@ -96,8 +119,6 @@ services:
       - JVM_TOOL_OPTIONS=-Xms128m -Xmx256m
       # 修正时区
       - TZ=Asia/Shanghai
-    ports:
-      - "8010:8010"
     deploy:
       resources:
         limits:
@@ -121,8 +142,6 @@ services:
       - JVM_TOOL_OPTIONS=-Xms128m -Xmx256m
       # 修正时区
       - TZ=Asia/Shanghai
-    ports:
-      - "8030:8030"
     deploy:
       resources:
         limits:

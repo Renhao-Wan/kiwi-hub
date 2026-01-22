@@ -23,11 +23,12 @@ public class WebMvcConfig implements WebMvcConfigurer {
         registry.addInterceptor(new LoginInterceptor(objectMapper))
                 .addPathPatterns("/**")
                 .excludePathPatterns(
-                        // 公开接口：查看文章、评论（只读操作）
+                        // 公开接口：查看文章、评论、搜索（只读操作）
                         "/articles/s",           // 获取文章列表
                         "/articles/{articleId}", // 获取文章详情
                         "/comments/roots",       // 获取一级评论列表
                         "/comments/replies",     // 获取楼中楼回复列表
+                        "/search/**",            // 搜索相关接口
                         // Swagger 文档相关
                         "/doc.html",
                         "/webjars/**",

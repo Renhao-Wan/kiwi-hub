@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Validated
 @RestController
-@RequestMapping("/articles")
+@RequestMapping("/content/articles")
 public class ArticleController {
 
     private final ArticleService articleService;
