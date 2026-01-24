@@ -1,5 +1,6 @@
 package com.iot.kiwicontent.service.impl;
 
+import com.iot.common.context.UserContext;
 import com.iot.common.result.PageResult;
 import com.iot.common.result.Result;
 import com.iot.kiwicontent.model.constant.ParameterConstant;
@@ -98,17 +99,23 @@ public class ArticleServiceImpl implements ArticleService {
     /**
      * 获取文章列表
      *
-     * @param userId 用户ID
      * @param pageNum 页码
      * @param pageSize 页大小
+     * @param currentUser 是否获取当前用户文章
      * @return 文章列表
      */
     @Override
-    public PageResult<ArticleListVO> getArticleList(String userId, Integer pageNum, Integer pageSize) {
+    public PageResult<ArticleListVO> getArticleList(Integer pageNum, Integer pageSize, Boolean currentUser) {
         Pageable pageable = PageRequest.of(pageNum - 1, pageSize,
                 Sort.by(Sort.Direction.DESC, "updatedAt"));
 
-        Page<Article> page = articleRepository.findByAuthorId(userId, pageable);
+        Page<Article> page;
+        if (currentUser) {
+            String userId = UserContext.getUserId();
+            page = articleRepository.findByAuthorId(userId, pageable);
+        } else {
+            page = articleRepository.findAll(pageable);
+        }
         return PageResult.restPage(page.map(article -> new ArticleListVO(article.getId(),
                 article.getTitle(),
                 article.getContentType(),
@@ -118,20 +125,18 @@ public class ArticleServiceImpl implements ArticleService {
 
     /**
      * 获取文章详情
-     * @param userId 用户ID
      * @param articleId 文章ID
      * @return 文章详情
      */
     @Override
-    public Article getArticleDetail(String userId, String articleId) {
+    public Article getArticleDetail(String articleId) {
         Article article = articleRepository.findById(articleId)
                 .orElse(Article.builder().build());
         // 发送文章浏览事件
-        rabbitTemplate.convertAndSend(RabbitConstant.ARTICLE_INTERACTION_EXCHANGE,
-                userId,
-                Map.of(ParameterConstant.ARTICLE_ID, articleId,
-                        ParameterConstant.CURRENT_USER_ID, userId,
-                        ParameterConstant.ACTION, ParameterConstant.INCREASE));
+//        Map<String, String> message = new HashMap<>();
+//        message.put(ParameterConstant.ARTICLE_ID, articleId);
+//        message.put(ParameterConstant.ACTION, ParameterConstant.INCREASE);
+//        rabbitTemplate.convertAndSend(RabbitConstant.ARTICLE_INTERACTION_EXCHANGE, userId, message);
         return article;
     }
 }

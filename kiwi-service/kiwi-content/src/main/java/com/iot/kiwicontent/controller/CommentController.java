@@ -23,7 +23,7 @@ import java.util.Map;
  */
 @Tag(name = "评论管理", description = "评论发布、删除、查询等相关接口")
 @RestController
-@RequestMapping("/content/comments")
+@RequestMapping("/comments")
 @RequiredArgsConstructor
 @Validated
 public class CommentController {

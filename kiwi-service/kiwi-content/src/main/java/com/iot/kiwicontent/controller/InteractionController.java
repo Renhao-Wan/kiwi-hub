@@ -18,7 +18,7 @@ import java.util.Map;
  */
 @Tag(name = "互动管理", description = "文章点赞等互动相关接口")
 @RestController
-@RequestMapping("/content/interactions")
+@RequestMapping("/interactions")
 @RequiredArgsConstructor
 public class InteractionController {
 

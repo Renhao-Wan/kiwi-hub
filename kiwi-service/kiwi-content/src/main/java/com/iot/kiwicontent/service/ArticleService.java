@@ -31,19 +31,18 @@ public interface ArticleService {
     /**
      * 获取文章列表
      *
-     * @param userId 用户ID
      * @param pageNum 页码
      * @param pageSize 页大小
+     * @param currentUser 是否获取当前用户的文章
      * @return 文章列表
      */
-    PageResult<ArticleListVO> getArticleList(String userId, Integer pageNum, Integer pageSize);
+    PageResult<ArticleListVO> getArticleList(Integer pageNum, Integer pageSize, Boolean currentUser);
 
     /**
      * 获取文章详情
      *
-     * @param userId 用户ID
      * @param articleId 文章ID
      * @return 文章详情
      */
-    Article getArticleDetail(String userId, String articleId);
+    Article getArticleDetail(String articleId);
 }

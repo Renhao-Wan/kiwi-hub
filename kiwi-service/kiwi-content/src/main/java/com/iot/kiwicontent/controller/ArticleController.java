@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Validated
 @RestController
-@RequestMapping("/content/articles")
+@RequestMapping("/articles")
 public class ArticleController {
 
     private final ArticleService articleService;
@@ -46,14 +46,19 @@ public class ArticleController {
     @GetMapping("/s")
     public Result<PageResult<ArticleListVO>> getArticleList(@Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer pageNum,
                                                             @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") Integer pageSize) {
-        String userId = UserContext.getUserId();
-        return Result.success(articleService.getArticleList(userId, pageNum, pageSize));
+        return Result.success(articleService.getArticleList(pageNum, pageSize, false));
+    }
+
+    @Operation(summary = "获取当前用户文章列表", description = "分页获取用户文章列表")
+    @GetMapping("/me")
+    public Result<PageResult<ArticleListVO>> getMyArticleList(@Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer pageNum,
+                                                              @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") Integer pageSize) {
+        return Result.success(articleService.getArticleList(pageNum, pageSize, true));
     }
 
     @Operation(summary = "获取文章详情", description = "根据文章ID获取文章详细信息")
     @GetMapping("{articleId}")
     public Result<Article> getArticleDetail(@Parameter(description = "文章ID", required = true) @PathVariable("articleId") String articleId) {
-        String userId = UserContext.getUserId();
-        return Result.success(articleService.getArticleDetail(userId, articleId));
+        return Result.success(articleService.getArticleDetail(articleId));
     }
 }

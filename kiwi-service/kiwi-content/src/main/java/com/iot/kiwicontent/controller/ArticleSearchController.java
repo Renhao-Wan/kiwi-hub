@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
  */
 @Tag(name = "文章搜索", description = "文章全文检索、正则搜索等相关接口")
 @RestController
-@RequestMapping("/content/search")
+@RequestMapping("/search")
 @RequiredArgsConstructor
 @Validated
 public class ArticleSearchController {
