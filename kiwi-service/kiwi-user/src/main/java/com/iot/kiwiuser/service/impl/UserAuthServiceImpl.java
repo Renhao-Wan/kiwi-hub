@@ -78,7 +78,7 @@ public class UserAuthServiceImpl implements UserAuthService {
                 .orElseGet(() -> User.builder().build());
         String passwordHash = user.getPasswordHash();
         if (passwordHash == null || !passwordEncoder.matches(password, passwordHash)) {
-            return Result.fail().message("用户名或密码错误");
+            return Result.fail().message("昵称、邮箱或验证密码错误，请核对后重新输入");
         }
         loginDTO.setId(user.getId());
         return Result.success().message("登录成功");
