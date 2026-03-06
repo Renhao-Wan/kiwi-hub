@@ -3,8 +3,7 @@ package com.iot.kiwicontent.service.impl;
 import com.iot.common.context.UserContext;
 import com.iot.common.result.PageResult;
 import com.iot.common.result.Result;
-import com.iot.kiwicontent.model.constant.ParameterConstant;
-import com.iot.kiwicontent.model.constant.RabbitConstant;
+import com.iot.kiwicontent.client.UserServiceClient;
 import com.iot.kiwicontent.model.dto.PublishArticleDTO;
 import com.iot.kiwicontent.model.pojo.Article;
 import com.iot.kiwicontent.model.pojo.ArticleStats;
@@ -12,7 +11,6 @@ import com.iot.kiwicontent.model.vo.ArticleListVO;
 import com.iot.kiwicontent.repository.ArticleRepository;
 import com.iot.kiwicontent.service.ArticleService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +21,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author wan
@@ -34,7 +31,7 @@ import java.util.Map;
 public class ArticleServiceImpl implements ArticleService {
 
     private final ArticleRepository articleRepository;
-    private final RabbitTemplate rabbitTemplate;
+    private final UserServiceClient userServiceClient;
 
     /**
      * 发表文章
@@ -60,15 +57,8 @@ public class ArticleServiceImpl implements ArticleService {
         List<String> tags = CollectionUtils.isEmpty(publishArticleDTO.getTags()) ? null : publishArticleDTO.getTags();
         article.setTags(tags);
         articleRepository.save(article);
-        // TODO: RabbitMQ 通知粉丝
-        // 通知用户服务增加文章数
-        rabbitTemplate.convertAndSend(
-                RabbitConstant.ARTICLE_USER_EXCHANGE,
-                userId,
-                Map.of(
-                        ParameterConstant.AUTHOR_ID, userId,
-                        ParameterConstant.ACTION, ParameterConstant.ARTICLE_PUBLISH
-                ));
+        // 通知用户服务增加文章数 (使用 OpenFeign)
+        userServiceClient.updateArticleCount(userId, 1);
     }
 
     /**
@@ -85,14 +75,8 @@ public class ArticleServiceImpl implements ArticleService {
             return Result.fail().message("文章不存在或无权删除该文章");
         }
         articleRepository.deleteById(articleId);
-        // RabbitMQ 删除文章数
-        rabbitTemplate.convertAndSend(
-                RabbitConstant.ARTICLE_USER_EXCHANGE,
-                userId,
-                Map.of(
-                        ParameterConstant.AUTHOR_ID, userId,
-                        ParameterConstant.ACTION, ParameterConstant.ARTICLE_DELETE
-        ));
+        // 通知用户服务减少文章数 (使用 OpenFeign)
+        userServiceClient.updateArticleCount(userId, -1);
         return Result.success();
     }
 
@@ -130,13 +114,7 @@ public class ArticleServiceImpl implements ArticleService {
      */
     @Override
     public Article getArticleDetail(String articleId) {
-        Article article = articleRepository.findById(articleId)
+        return articleRepository.findById(articleId)
                 .orElse(Article.builder().build());
-        // 发送文章浏览事件
-//        Map<String, String> message = new HashMap<>();
-//        message.put(ParameterConstant.ARTICLE_ID, articleId);
-//        message.put(ParameterConstant.ACTION, ParameterConstant.INCREASE);
-//        rabbitTemplate.convertAndSend(RabbitConstant.ARTICLE_INTERACTION_EXCHANGE, userId, message);
-        return article;
     }
 }

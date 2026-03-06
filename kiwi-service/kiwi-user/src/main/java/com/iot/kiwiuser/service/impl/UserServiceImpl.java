@@ -3,7 +3,6 @@ package com.iot.kiwiuser.service.impl;
 import com.iot.common.result.PageResult;
 import com.iot.common.result.Result;
 import com.iot.kiwiuser.model.constant.ParameterConstant;
-import com.iot.kiwiuser.model.constant.RabbitConstant;
 import com.iot.kiwiuser.model.dto.UserProfileDTO;
 import com.iot.kiwiuser.model.pojo.User;
 import com.iot.kiwiuser.model.pojo.UserRelation;
@@ -11,10 +10,10 @@ import com.iot.kiwiuser.model.vo.UserCardVO;
 import com.iot.kiwiuser.model.vo.UserDetailVO;
 import com.iot.kiwiuser.repository.UserRelationRepository;
 import com.iot.kiwiuser.repository.UserRepository;
+import com.iot.kiwiuser.service.StatsService;
 import com.iot.kiwiuser.service.UserService;
 import com.mongodb.MongoWriteException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
@@ -39,7 +38,7 @@ public class UserServiceImpl implements UserService {
     private final UserRepository userRepository;
     private final UserRelationRepository userRelationRepository;
     private final MongoTemplate mongoTemplate;
-    private final RabbitTemplate rabbitTemplate;
+    private final StatsService statsService;
 
     /**
      * 获取当前用户信息
@@ -81,14 +80,8 @@ public class UserServiceImpl implements UserService {
             }
             throw e;
         }
-        // RabbitMQ推送消息+更新 users 表的统计字段
-        rabbitTemplate.convertAndSend(RabbitConstant.USER_RELATION_EXCHANGE,
-                userId,
-                Map.of(
-                        ParameterConstant.FOLLOWER_ID, userId,
-                        ParameterConstant.FOLLOWING_ID, followUserId,
-                        ParameterConstant.FOLLOW_ACTION, ParameterConstant.FOLLOW
-                ));
+        // 异步更新统计 (替代 RabbitMQ)
+        statsService.updateFollowStats(userId, followUserId, 1);
         return Result.success().message("关注成功");
     }
 
@@ -102,13 +95,8 @@ public class UserServiceImpl implements UserService {
     public Result<Object> unfollow(String userId, String followUserId) {
         // 直接删除，数据库自动处理不存在的情况
         userRelationRepository.deleteByFollowerIdAndFollowingId(userId, followUserId);
-        rabbitTemplate.convertAndSend(RabbitConstant.USER_RELATION_EXCHANGE,
-                userId,
-                Map.of(
-                        ParameterConstant.FOLLOWER_ID, userId,
-                        ParameterConstant.FOLLOWING_ID, followUserId,
-                        ParameterConstant.FOLLOW_ACTION, ParameterConstant.UNFOLLOW
-                ));
+        // 异步更新统计 (替代 RabbitMQ)
+        statsService.updateFollowStats(userId, followUserId, -1);
         return Result.success().message("取消关注成功");
     }
 
