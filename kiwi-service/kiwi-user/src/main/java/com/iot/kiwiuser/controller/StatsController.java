@@ -19,6 +19,12 @@ public class StatsController {
 
     private final StatsService statsService;
 
+    /**
+     * 更新文章数量
+     * @param userId 用户ID
+     * @param delta 增量
+     * @return 是否成功
+     */
     @PostMapping("/article/count/{userId}/{delta}")
     public Result<Object> updateArticleCount(@PathVariable String userId, @PathVariable int delta) {
         statsService.updateArticleCount(userId, delta);
