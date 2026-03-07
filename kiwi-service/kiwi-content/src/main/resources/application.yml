@@ -6,4 +6,4 @@ spring:
     name: kiwi-hub-content
   profiles:
     active: dev
-    include: connect
+    include: connect,database

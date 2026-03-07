@@ -6,44 +6,26 @@ import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.springframework.data.mongodb.core.mapping.Field;
-
-import java.time.LocalDateTime;
 
 /**
- * 用户实体类
+ * 用户文档（MongoDB）
+ * 存储用户半结构化资料数据和去规范化的用户名（用于快速查询）
  * @author wan
  */
-@Schema(description = "用户实体")
+@Schema(description = "用户文档")
 @Data
 @Builder
 @Document(collection = "users")
 public class User {
 
     @Id
-    @Schema(description = "用户ID")
+    @Schema(description = "用户ID（与MySQL user表id关联）")
     private String id;
 
     @Indexed(unique = true)
-    @Schema(description = "用户名", required = true)
+    @Schema(description = "用户名（去规范化存储，与MySQL同步）")
     private String username;
-
-    @Indexed(unique = true)
-    @Schema(description = "邮箱", required = true)
-    private String email;
-
-    @Field(name = "password_hash")
-    @Schema(description = "密码哈希值（BCrypt加密）", required = true)
-    private String passwordHash;
-
-    @Field(name = "created_at")
-    @Schema(description = "注册时间")
-    private LocalDateTime createdAt;
 
     @Schema(description = "用户资料信息")
     private UserProfile profile;
-
-    @Field(name = "social_stats")
-    @Schema(description = "用户社交统计数据")
-    private UserStats socialStats;
 }

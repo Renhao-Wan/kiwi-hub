@@ -1,21 +1,23 @@
 package com.iot.kiwiuser.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.iot.common.result.PageResult;
 import com.iot.common.result.Result;
-import com.iot.kiwiuser.model.constant.ParameterConstant;
+import com.iot.kiwiuser.entity.UserRelationEntity;
+import com.iot.kiwiuser.mapper.UserRelationMapper;
 import com.iot.kiwiuser.model.dto.UserProfileDTO;
 import com.iot.kiwiuser.model.pojo.User;
-import com.iot.kiwiuser.model.pojo.UserRelation;
 import com.iot.kiwiuser.model.vo.UserCardVO;
 import com.iot.kiwiuser.model.vo.UserDetailVO;
-import com.iot.kiwiuser.repository.UserRelationRepository;
 import com.iot.kiwiuser.repository.UserRepository;
 import com.iot.kiwiuser.service.StatsService;
+import com.iot.kiwiuser.service.UserEntityService;
+import com.iot.kiwiuser.service.UserRelationEntityService;
 import com.iot.kiwiuser.service.UserService;
-import com.mongodb.MongoWriteException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
@@ -33,10 +35,10 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService {
+public class UserServiceImpl extends ServiceImpl<UserRelationMapper, UserRelationEntity> implements UserService, UserRelationEntityService {
 
     private final UserRepository userRepository;
-    private final UserRelationRepository userRelationRepository;
+    private final UserEntityService userEntityService;
     private final MongoTemplate mongoTemplate;
     private final StatsService statsService;
 
@@ -62,23 +64,20 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Result<Object> follow(String userId, String followUserId) {
-        boolean exists = userRepository.existsById(followUserId);
-        if (!exists) {
+        // 检查被关注用户是否存在（查询MySQL）
+        com.iot.kiwiuser.entity.UserEntity followUserEntity = userEntityService.getById(followUserId);
+        if (followUserEntity == null) {
             return Result.fail().message("关注的用户不存在");
         }
-        // 保存关注关系
-        UserRelation userRelation = new UserRelation(userId, followUserId);
+        // 保存关注关系到MySQL
+        UserRelationEntity relationEntity = new UserRelationEntity();
+        relationEntity.setFollowerId(userId);
+        relationEntity.setFollowingId(followUserId);
+        relationEntity.setCreatedAt(java.time.LocalDateTime.now());
         try {
-            // 效率高且线程安全
-            userRelationRepository.save(userRelation);
-        } catch (Exception e) {
-            // 捕获唯一索引冲突的异常
-            if (e.getCause() instanceof MongoWriteException mongoWriteException) {
-                if (mongoWriteException.getError().getCode() == 11000) {
-                    return Result.fail().message("已关注该用户");
-                }
-            }
-            throw e;
+            save(relationEntity);
+        } catch (org.springframework.dao.DuplicateKeyException e) {
+            return Result.fail().message("已关注该用户");
         }
         // 异步更新统计 (替代 RabbitMQ)
         statsService.updateFollowStats(userId, followUserId, 1);
@@ -93,8 +92,12 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public Result<Object> unfollow(String userId, String followUserId) {
-        // 直接删除，数据库自动处理不存在的情况
-        userRelationRepository.deleteByFollowerIdAndFollowingId(userId, followUserId);
+        // 删除MySQL中的关注关系
+        remove(
+                new LambdaQueryWrapper<UserRelationEntity>()
+                        .eq(UserRelationEntity::getFollowerId, userId)
+                        .eq(UserRelationEntity::getFollowingId, followUserId)
+        );
         // 异步更新统计 (替代 RabbitMQ)
         statsService.updateFollowStats(userId, followUserId, -1);
         return Result.success().message("取消关注成功");
@@ -124,15 +127,23 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public PageResult<UserCardVO> getFollowingList(String userId, Integer pageNum, Integer pageSize) {
-        // 1. 设置分页，按时间倒序
-        Pageable pageable = PageRequest.of(pageNum - 1, pageSize,
-                Sort.by(Sort.Direction.DESC, "createdAt"));
+        // 1. 使用 MyBatis-Plus 分页，按创建时间倒序
+        Page<UserRelationEntity> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<UserRelationEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserRelationEntity::getFollowerId, userId)
+                .orderByDesc(UserRelationEntity::getCreatedAt);
+        Page<UserRelationEntity> relationPage = this.page(page, wrapper);
 
-        // 2. 查询关系表：查“我关注了谁” (findByFollowerId)
-        Page<UserRelation> relationPage = userRelationRepository.findByFollowerId(userId, pageable);
+        // 2. 转换为 Spring Data Page 格式（保持与原有方法兼容）
+        org.springframework.data.domain.Page<UserRelationEntity> springPage =
+                new org.springframework.data.domain.PageImpl<>(
+                        relationPage.getRecords(),
+                        org.springframework.data.domain.PageRequest.of(pageNum - 1, pageSize),
+                        relationPage.getTotal()
+                );
 
         // 3. 调用通用处理逻辑，传入提取规则：提取被关注人的ID (getFollowingId)
-        return buildUserCardPage(relationPage, pageable, UserRelation::getFollowingId);
+        return buildUserCardPage(springPage, springPage.getPageable(), UserRelationEntity::getFollowingId);
     }
 
     /**
@@ -144,15 +155,23 @@ public class UserServiceImpl implements UserService {
      */
     @Override
     public PageResult<UserCardVO> getFollowersList(String userId, Integer pageNum, Integer pageSize) {
-        // 1. 设置分页
-        Pageable pageable = PageRequest.of(pageNum - 1, pageSize,
-                Sort.by(Sort.Direction.DESC, "createdAt"));
+        // 1. 使用 MyBatis-Plus 分页，按创建时间倒序
+        Page<UserRelationEntity> page = new Page<>(pageNum, pageSize);
+        LambdaQueryWrapper<UserRelationEntity> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(UserRelationEntity::getFollowingId, userId)
+                .orderByDesc(UserRelationEntity::getCreatedAt);
+        Page<UserRelationEntity> relationPage = this.page(page, wrapper);
 
-        // 2. 查询关系表：查“谁关注了我” (findByFollowingId)
-        Page<UserRelation> relationPage = userRelationRepository.findByFollowingId(userId, pageable);
+        // 2. 转换为 Spring Data Page 格式（保持与原有方法兼容）
+        org.springframework.data.domain.Page<UserRelationEntity> springPage =
+                new org.springframework.data.domain.PageImpl<>(
+                        relationPage.getRecords(),
+                        org.springframework.data.domain.PageRequest.of(pageNum - 1, pageSize),
+                        relationPage.getTotal()
+                );
 
         // 3. 调用通用处理逻辑，传入提取规则：提取粉丝的ID (getFollowerId)
-        return buildUserCardPage(relationPage, pageable, UserRelation::getFollowerId);
+        return buildUserCardPage(springPage, springPage.getPageable(), UserRelationEntity::getFollowerId);
     }
 
     /**
@@ -162,11 +181,11 @@ public class UserServiceImpl implements UserService {
      * @param pageable     分页参数
      * @param idExtractor  函数式接口，定义如何从 UserRelation 中提取目标用户ID
      */
-    private PageResult<UserCardVO> buildUserCardPage(Page<UserRelation> relationPage,
-                                               Pageable pageable,
-                                               Function<UserRelation, String> idExtractor) {
+    private PageResult<UserCardVO> buildUserCardPage(org.springframework.data.domain.Page<UserRelationEntity> relationPage,
+                                                org.springframework.data.domain.Pageable pageable,
+                                                Function<UserRelationEntity, String> idExtractor) {
         if (relationPage.isEmpty()) {
-            return PageResult.restPage(Page.empty());
+            return PageResult.restPage(org.springframework.data.domain.Page.empty());
         }
 
         // 1. 利用传入的函数 idExtractor 提取目标 ID 列表
@@ -206,7 +225,7 @@ public class UserServiceImpl implements UserService {
                     return vo;
                 })
                 .toList();
-        Page<UserCardVO> springPage = new PageImpl<>(voList, pageable, relationPage.getTotalElements());
+        org.springframework.data.domain.Page<UserCardVO> springPage = new org.springframework.data.domain.PageImpl<>(voList, pageable, relationPage.getTotalElements());
         return PageResult.restPage(springPage);
     }
 }

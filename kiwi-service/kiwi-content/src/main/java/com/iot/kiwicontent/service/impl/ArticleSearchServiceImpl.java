@@ -1,10 +1,12 @@
 package com.iot.kiwicontent.service.impl;
 
 import com.iot.common.result.PageResult;
+import com.iot.kiwicontent.entity.ArticleStatsEntity;
 import com.iot.kiwicontent.model.dto.ArticleSearchDTO;
-import com.iot.kiwicontent.model.pojo.Article;
+import com.iot.kiwicontent.model.pojo.ArticleContentDocument;
 import com.iot.kiwicontent.model.vo.ArticleSearchResultVO;
 import com.iot.kiwicontent.service.ArticleSearchService;
+import com.iot.kiwicontent.service.ArticleStatsEntityService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,10 +19,13 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
- * 文章搜索服务实现类
+ * 文章搜索服务实现类（基于 MongoDB ArticleContentDocument 全文搜索）
+ * 
  * @author wan
  */
 @Service
@@ -28,22 +33,28 @@ import java.util.regex.Pattern;
 public class ArticleSearchServiceImpl implements ArticleSearchService {
 
     private final MongoTemplate mongoTemplate;
+    private final ArticleStatsEntityService articleStatsEntityService;
 
     @Override
     public PageResult<ArticleSearchResultVO> searchArticles(ArticleSearchDTO searchDTO) {
-        List<Article> articles;
-        long total;
+        // 1. 使用 MongoDB 文本索引搜索 ArticleContentDocument
+        List<ArticleContentDocument> contentDocs = searchByTextIndex(searchDTO);
+        long total = countByTextIndex(searchDTO);
 
-        // MongoDB 全文搜索
-        articles = searchByTextIndex(searchDTO);
-        total = countByTextIndex(searchDTO);
+        // 2. 批量获取文章统计信息（从 MySQL）
+        List<String> articleIds = contentDocs.stream()
+                .map(ArticleContentDocument::getArticleId)
+                .collect(Collectors.toList());
+        Map<String, ArticleStatsEntity> statsMap = articleStatsEntityService.listByIds(articleIds)
+                .stream()
+                .collect(Collectors.toMap(ArticleStatsEntity::getArticleId, stats -> stats));
 
-        // 转换为 VO
-        List<ArticleSearchResultVO> resultVos = articles.stream()
-                .map(this::convertToSearchResultVO)
+        // 3. 转换为 VO
+        List<ArticleSearchResultVO> resultVos = contentDocs.stream()
+                .map(doc -> convertToSearchResultVO(doc, statsMap.get(doc.getArticleId())))
                 .toList();
 
-        // 添加搜索关键词高亮
+        // 4. 添加搜索关键词高亮
         resultVos.forEach(vo -> addSearchHighlights(vo, searchDTO.getKeyword()));
 
         long totalPages = (total + searchDTO.getPageSize() - 1) / searchDTO.getPageSize();
@@ -52,16 +63,12 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
     }
 
     /**
-     * 使用 MongoDB 文本索引搜索
+     * 使用 MongoDB 文本索引搜索 ArticleContentDocument
      */
-    private List<Article> searchByTextIndex(ArticleSearchDTO searchDTO) {
-        // 创建文本搜索条件
-        TextCriteria textCriteria;
-        textCriteria = TextCriteria.forDefaultLanguage().matching(searchDTO.getKeyword());
-
-        // 创建查询
+    private List<ArticleContentDocument> searchByTextIndex(ArticleSearchDTO searchDTO) {
+        TextCriteria textCriteria = TextCriteria.forDefaultLanguage().matching(searchDTO.getKeyword());
         TextQuery query = TextQuery.queryText(textCriteria);
-        
+
         // 添加标签过滤
         if (searchDTO.getTags() != null && !searchDTO.getTags().isEmpty()) {
             String[] tagArray = searchDTO.getTags().split(",");
@@ -76,7 +83,7 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
         Pageable pageable = PageRequest.of(searchDTO.getPageNum() - 1, searchDTO.getPageSize());
         query.with(pageable);
 
-        return mongoTemplate.find(query, Article.class);
+        return mongoTemplate.find(query, ArticleContentDocument.class);
     }
 
     /**
@@ -85,29 +92,31 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
     private long countByTextIndex(ArticleSearchDTO searchDTO) {
         TextCriteria textCriteria = TextCriteria.forDefaultLanguage().matching(searchDTO.getKeyword());
         TextQuery query = TextQuery.queryText(textCriteria);
-        
+
         if (searchDTO.getTags() != null && !searchDTO.getTags().isEmpty()) {
             String[] tagArray = searchDTO.getTags().split(",");
             query.addCriteria(Criteria.where("tags").in((Object[]) tagArray));
         }
 
-        return mongoTemplate.count(query, Article.class);
+        return mongoTemplate.count(query, ArticleContentDocument.class);
     }
 
     /**
      * 构建排序条件
      */
     private Sort buildSort(ArticleSearchDTO searchDTO) {
-        Sort.Direction direction = "asc".equalsIgnoreCase(searchDTO.getSortOrder()) 
+        Sort.Direction direction = "asc".equalsIgnoreCase(searchDTO.getSortOrder())
                 ? Sort.Direction.ASC : Sort.Direction.DESC;
-        
+
         switch (searchDTO.getSortBy()) {
             case "time":
                 return Sort.by(direction, "updatedAt");
             case "views":
-                return Sort.by(direction, "stats.viewCount");
+                // 注意：浏览量存储在 MySQL，无法在 MongoDB 排序，降级按时间排序
+                return Sort.by(Sort.Direction.DESC, "updatedAt");
             case "likes":
-                return Sort.by(direction, "stats.likeCount");
+                // 同理，降级按时间排序
+                return Sort.by(Sort.Direction.DESC, "updatedAt");
             case "relevance":
             default:
                 // 全文搜索时按相关度排序，正则搜索时按时间排序
@@ -120,31 +129,35 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
     }
 
     /**
-     * 将 Article 转换为 ArticleSearchResultVO
+     * 将 ArticleContentDocument 转换为 ArticleSearchResultVO
      */
-    private ArticleSearchResultVO convertToSearchResultVO(Article article) {
+    private ArticleSearchResultVO convertToSearchResultVO(ArticleContentDocument doc, ArticleStatsEntity stats) {
         ArticleSearchResultVO vo = new ArticleSearchResultVO();
-        vo.setId(article.getId());
-        vo.setAuthorId(article.getAuthorId());
-        vo.setTitle(article.getTitle());
-        
+        vo.setId(doc.getArticleId());
+        vo.setAuthorId(doc.getAuthorId());
+        vo.setTitle(doc.getTitle());
+
         // 生成摘要（截取前200个字符）
-        String content = article.getContent();
+        String content = doc.getContent();
         if (content != null && content.length() > 200) {
             vo.setSummary(content.substring(0, 200) + "...");
         } else {
             vo.setSummary(content);
         }
-        
-        vo.setContentType(article.getContentType());
-        vo.setTags(article.getTags());
-        vo.setCreatedAt(article.getCreatedAt());
-        vo.setUpdatedAt(article.getUpdatedAt());
-        
-        if (article.getStats() != null) {
-            vo.setViewCount(article.getStats().getViewCount());
-            vo.setLikeCount(article.getStats().getLikeCount());
-            vo.setCommentCount(article.getStats().getCommentCount());
+
+        vo.setContentType(doc.getContentType());
+        vo.setTags(doc.getTags());
+        vo.setCreatedAt(doc.getCreatedAt());
+        vo.setUpdatedAt(doc.getUpdatedAt());
+
+        if (stats != null) {
+            vo.setViewCount(stats.getViewCount());
+            vo.setLikeCount(stats.getLikeCount());
+            vo.setCommentCount(stats.getCommentCount());
+        } else {
+            vo.setViewCount(0);
+            vo.setLikeCount(0);
+            vo.setCommentCount(0);
         }
         return vo;
     }
@@ -154,17 +167,17 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
      */
     private void addSearchHighlights(ArticleSearchResultVO vo, String keyword) {
         List<String> highlights = new ArrayList<>();
-        
+
         // 在标题中查找关键词
         if (vo.getTitle() != null && vo.getTitle().toLowerCase().contains(keyword.toLowerCase())) {
             highlights.add("标题: " + highlightText(vo.getTitle(), keyword));
         }
-        
+
         // 在摘要中查找关键词
         if (vo.getSummary() != null && vo.getSummary().toLowerCase().contains(keyword.toLowerCase())) {
             highlights.add("内容: " + highlightText(vo.getSummary(), keyword));
         }
-        
+
         // 在标签中查找关键词
         if (vo.getTags() != null) {
             for (String tag : vo.getTags()) {
@@ -173,7 +186,7 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
                 }
             }
         }
-        
+
         vo.setHighlights(highlights);
     }
 
@@ -184,7 +197,7 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
         if (text == null || keyword == null) {
             return text;
         }
-        
+
         // 简单的高亮实现：用 ** 包裹关键词
         return text.replaceAll("(?i)" + Pattern.quote(keyword), "**$0**");
     }

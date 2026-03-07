@@ -1,22 +1,18 @@
 package com.iot.kiwiuser.service.impl;
 
-import com.iot.kiwiuser.model.pojo.User;
+import com.baomidou.mybatisplus.core.conditions.update.LambdaUpdateWrapper;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.iot.kiwiuser.entity.UserStatsEntity;
+import com.iot.kiwiuser.mapper.UserStatsMapper;
 import com.iot.kiwiuser.service.StatsService;
-import lombok.RequiredArgsConstructor;
+import com.iot.kiwiuser.service.UserStatsEntityService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Slf4j
 @Service
-@RequiredArgsConstructor
-public class StatsServiceImpl implements StatsService {
-
-    private final MongoTemplate mongoTemplate;
+public class StatsServiceImpl extends ServiceImpl<UserStatsMapper, UserStatsEntity> implements StatsService, UserStatsEntityService {
 
     // TODO 暂未考虑事务
     @Async("statsUpdateExecutor")
@@ -46,20 +42,23 @@ public class StatsServiceImpl implements StatsService {
     }
 
     private void updateFollowingCount(String userId, int delta) {
-        Query query = new Query(Criteria.where("_id").is(userId));
-        Update update = new Update().inc("social_stats.following_count", delta);
-        mongoTemplate.updateFirst(query, update, User.class);
+        LambdaUpdateWrapper<UserStatsEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(UserStatsEntity::getUserId, userId)
+                .setSql("following_count = following_count + " + delta);
+        getBaseMapper().update(null, updateWrapper);
     }
 
     private void updateFollowerCount(String userId, int delta) {
-        Query query = new Query(Criteria.where("_id").is(userId));
-        Update update = new Update().inc("social_stats.follower_count", delta);
-        mongoTemplate.updateFirst(query, update, User.class);
+        LambdaUpdateWrapper<UserStatsEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(UserStatsEntity::getUserId, userId)
+                .setSql("follower_count = follower_count + " + delta);
+        getBaseMapper().update(null, updateWrapper);
     }
 
     private void updateArticleCountInternal(String userId, int delta) {
-        Query query = new Query(Criteria.where("_id").is(userId));
-        Update update = new Update().inc("social_stats.article_count", delta);
-        mongoTemplate.updateFirst(query, update, User.class);
+        LambdaUpdateWrapper<UserStatsEntity> updateWrapper = new LambdaUpdateWrapper<>();
+        updateWrapper.eq(UserStatsEntity::getUserId, userId)
+                .setSql("article_count = article_count + " + delta);
+        getBaseMapper().update(null, updateWrapper);
     }
 }

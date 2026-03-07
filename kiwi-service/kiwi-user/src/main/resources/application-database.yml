@@ -1,0 +1,27 @@
+# MySQL 数据源配置（MyBatis-Plus）
+spring:
+  datasource:
+    url: jdbc:mysql://5z3ixv.h.filess.io:61002/kiwi_hub_ourselves?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: kiwi_hub_ourselves
+    password: 31754e49fc4a9dcaa53c4ab881f1835c8da0b0a6
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: ${MYSQL_POOL_SIZE:20}
+      minimum-idle: ${MYSQL_POOL_MIN:5}
+      idle-timeout: 300000
+      connection-timeout: 20000
+      max-lifetime: 1200000
+
+# MyBatis-Plus 配置
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl  # 开发环境开启SQL日志
+    map-underscore-to-camel-case: true
+  global-config:
+    db-config:
+      id-type: assign_uuid  # UUID主键策略
+      logic-delete-field: deleted  # 逻辑删除字段
+      logic-delete-value: 1  # 已删除值
+      logic-not-delete-value: 0  # 未删除值
+  mapper-locations: classpath*:/mapper/**/*.xml
+  type-aliases-package: com.iot.kiwiuser.entity

@@ -11,7 +11,6 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
  */
 @Knife4jConfig
 @EnableGlobalExceptionHandler
-@EnableDiscoveryClient
 @SpringBootApplication
 public class KiwiUserApplication {
 
