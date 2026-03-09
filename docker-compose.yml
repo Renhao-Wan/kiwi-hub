@@ -84,7 +84,7 @@ services:
 
   # 3 个微服务
   kiwi-user:
-    image: kiwi-user:v1
+    build: ./services/user  # 自动从这个目录找 Dockerfile 构建
     container_name: kiwi-user
     restart: always
     environment:
@@ -107,7 +107,7 @@ services:
       nacos:
         condition: service_healthy
   kiwi-content:
-    image: kiwi-content:v1
+    build: ./services/content  # 自动从这个目录找 Dockerfile 构建
     container_name: kiwi-content
     restart: always
     environment:
@@ -130,7 +130,7 @@ services:
       nacos:
         condition: service_healthy
   kiwi-link:
-    image: kiwi-link:v1
+    build: ./services/user  # 自动从这个目录找 Dockerfile 构建
     container_name: kiwi-link
     restart: always
     environment:
