@@ -96,6 +96,8 @@ services:
       - JVM_TOOL_OPTIONS=-Xms128m -Xmx256m
       # 修正时区
       - TZ=Asia/Shanghai
+    ports:
+      - "8070:8070"
     deploy:
       resources:
         limits:
@@ -119,6 +121,8 @@ services:
       - JVM_TOOL_OPTIONS=-Xms128m -Xmx256m
       # 修正时区
       - TZ=Asia/Shanghai
+    ports:
+      - "8010:8010"
     deploy:
       resources:
         limits:
@@ -142,6 +146,8 @@ services:
       - JVM_TOOL_OPTIONS=-Xms128m -Xmx256m
       # 修正时区
       - TZ=Asia/Shanghai
+    ports:
+      - "8030:8030"
     deploy:
       resources:
         limits:
