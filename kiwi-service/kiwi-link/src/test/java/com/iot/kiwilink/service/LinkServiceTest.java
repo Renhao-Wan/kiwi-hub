@@ -210,6 +210,7 @@ class LinkServiceTest {
 
     /**
      * 获取长链接测试 - 内部类
+     * 测试 {@link LinkService#getLongLink(String)} 方法的核心逻辑
      */
     @Nested
     @DisplayName("获取长链接测试")
