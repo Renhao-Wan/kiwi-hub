@@ -41,6 +41,8 @@ jobs:
           cp kiwi-service/kiwi-content/docker/Dockerfile deploy/services/content/
           cp kiwi-service/kiwi-user/target/*.jar deploy/services/user/
           cp kiwi-service/kiwi-user/docker/Dockerfile deploy/services/user/
+          mkdir -p deploy/nginx
+          cp -rp nginx/ deploy/nginx/
           cp docker-compose.yml deploy/
 
       # 开始部署
@@ -51,7 +53,7 @@ jobs:
           username: ${{ secrets.SERVER_USER }} # 服务器账号
           password: ${{ secrets.SERVER_PWD }}  # 服务器密码
           source: "deploy/**"             # 上传整个 deploy 目录下的内容
-          target: ${{ vars.DEPLOY_PATH }} # 服务器上的目标目录
+          target: /opt/kiwihub/           # 服务器上的目标目录
           strip_components: 1             # 去掉 deploy/ 前缀，让内容直接落到 DEPLOY_PATH 下
 
       - name: SSH 登录并重启 Docker 容器
@@ -60,6 +62,7 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PWD }}
-          script: |                   # 如果只重启 link 服务（docker compose up -d --build --no-deps kiwi-link）
-            cd ${{ vars.DEPLOY_PATH }}
+          script: |                   # 如果只重启 link 服务（docker compose up -d --build --no-deps kiwi-link），必须重启 nginx 服务，清空了 Nginx 容器里的 DNS 解析记录，让它重新找各个微服务的最新 IP
+            cd /opt/kiwihub/
             docker compose up -d --build
+            docker restart kiwi-nginx

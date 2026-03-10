@@ -46,7 +46,7 @@ services:
       # - "9849:9849" # 这个端口通常用于集群同步，单机模式可不映射到宿主机，但在容器间网络要通
     volumes:
       # 挂载日志，方便排错
-      - ./nacos/logs:/home/nacos/logs
+      - /opt/kiwihub/nacos/logs:/home/nacos/logs
       - /opt/kiwihub/data/nacos:/home/nacos/data
     deploy:
       resources:
