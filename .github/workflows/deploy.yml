@@ -33,6 +33,8 @@ jobs:
       - name: 准备部署文件（在 github 的 Runner 临时目录）
         run: |
           mkdir -p deploy/services/link
+          mkdir -p deploy/services/content
+          mkdir -p deploy/services/user
           cp kiwi-service/kiwi-link/target/*.jar deploy/services/link/
           cp kiwi-service/kiwi-link/docker/Dockerfile deploy/services/link/
           cp kiwi-service/kiwi-content/target/*.jar deploy/services/content/
@@ -58,6 +60,6 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PWD }}
-          script: |                   # 如果只重启 link 服务（docker-compose up -d --build --no-deps kiwi-link）
+          script: |                   # 如果只重启 link 服务（docker compose up -d --build --no-deps kiwi-link）
             cd ${{ vars.DEPLOY_PATH }}
             docker compose up -d --build
