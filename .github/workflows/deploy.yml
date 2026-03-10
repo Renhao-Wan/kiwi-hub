@@ -42,7 +42,7 @@ jobs:
           cp kiwi-service/kiwi-user/target/*.jar deploy/services/user/
           cp kiwi-service/kiwi-user/docker/Dockerfile deploy/services/user/
           mkdir -p deploy/nginx
-          cp -rp nginx/ deploy/nginx/
+          cp -rp nginx/* deploy/nginx/
           cp docker-compose.yml deploy/
 
       # 开始部署
