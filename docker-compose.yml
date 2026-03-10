@@ -68,7 +68,7 @@ services:
       - "80:80" # 只暴露 80 端口给公网
     volumes:
       # 挂载配置文件
-      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./nginx/config:/etc/nginx/conf.d
       # 挂载静态资源（文档导航页）
       - ./nginx/html:/usr/share/nginx/html
       # 挂载日志
