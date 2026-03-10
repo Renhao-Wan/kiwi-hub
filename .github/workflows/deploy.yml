@@ -60,4 +60,4 @@ jobs:
           password: ${{ secrets.SERVER_PWD }}
           script: |                   # 如果只重启 link 服务（docker-compose up -d --build --no-deps kiwi-link）
             cd ${{ vars.DEPLOY_PATH }}
-            docker-compose up -d --build
+            docker compose up -d --build

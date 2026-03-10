@@ -130,7 +130,7 @@ services:
       nacos:
         condition: service_healthy
   kiwi-link:
-    build: ./services/user  # 自动从这个目录找 Dockerfile 构建
+    build: ./services/link  # 自动从这个目录找 Dockerfile 构建
     container_name: kiwi-link
     restart: always
     environment:
