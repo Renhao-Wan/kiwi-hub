@@ -15,7 +15,7 @@ spring:
   config:
     import:
       - nacos:kiwi-content-mongodb.yml
-      - nacos:kiwi-content-rabbitmq.yml
+      - nacos:kiwi-content-mysql.yml
       - nacos:kiwi-content-redis.yml
       - nacos:kiwi-redis-session.yml
       - nacos:kiwi-knife4j.yml

@@ -16,6 +16,6 @@ spring:
     import:
       - nacos:kiwi-user-mongodb.yml
       - nacos:kiwi-user-redis.yml
-      - nacos:kiwi-user-rabbitmq.yml
+      - nacos:kiwi-user-mysql.yml
       - nacos:kiwi-redis-session.yml
       - nacos:kiwi-knife4j.yml
