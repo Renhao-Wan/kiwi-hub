@@ -47,7 +47,7 @@ services:
     volumes:
       # 挂载日志，方便排错
       - /opt/kiwihub/nacos/logs:/home/nacos/logs
-      - /opt/kiwihub/data/nacos:/home/nacos/data
+      - /opt/kiwihub/nacos/data:/home/nacos/data
     deploy:
       resources:
         limits:
@@ -68,11 +68,11 @@ services:
       - "80:80" # 只暴露 80 端口给公网
     volumes:
       # 挂载配置文件
-      - ./nginx/config:/etc/nginx/conf.d
+      - /opt/kiwihub/nginx/config:/etc/nginx/conf.d
       # 挂载静态资源（文档导航页）
-      - ./nginx/html:/usr/share/nginx/html
+      - /opt/kiwihub/nginx/html:/usr/share/nginx/html
       # 挂载日志
-      - ./nginx/logs:/var/log/nginx
+      - /opt/kiwihub/nginx/logs:/var/log/nginx
     environment:
       - TZ=Asia/Shanghai
     deploy:
@@ -86,6 +86,7 @@ services:
   kiwi-user:
     build: ./services/user  # 自动从这个目录找 Dockerfile 构建
     container_name: kiwi-user
+    image: kiwi-user:latest
     restart: always
     environment:
       # 这里对应上面 YAML 里的变量名
@@ -111,6 +112,7 @@ services:
   kiwi-content:
     build: ./services/content  # 自动从这个目录找 Dockerfile 构建
     container_name: kiwi-content
+    image: kiwi-content:latest
     restart: always
     environment:
       # 这里对应上面 YAML 里的变量名
@@ -136,6 +138,7 @@ services:
   kiwi-link:
     build: ./services/link  # 自动从这个目录找 Dockerfile 构建
     container_name: kiwi-link
+    image: kiwi-link:latest
     restart: always
     environment:
       # 这里对应上面 YAML 里的变量名

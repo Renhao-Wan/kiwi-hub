@@ -45,6 +45,18 @@ jobs:
           cp -rp nginx/* deploy/nginx/
           cp docker-compose.yml deploy/
 
+      # 提前在服务器创建目标目录（避免 scp 上传失败）
+      - name: 确保服务器目标目录存在
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PWD }}
+          # -p 确保多级目录都能创建，已存在则不报错，同时赋予基础权限
+          script: |
+            mkdir -p /opt/kiwihub/
+            chmod 755 /opt/kiwihub/
+
       # 开始部署
       - name: 部署到云服务器
         uses: appleboy/scp-action@master
@@ -62,7 +74,17 @@ jobs:
           host: ${{ secrets.SERVER_IP }}
           username: ${{ secrets.SERVER_USER }}
           password: ${{ secrets.SERVER_PWD }}
-          script: |                   # 如果只重启 link 服务（docker compose up -d --build --no-deps kiwi-link），必须重启 nginx 服务，清空了 Nginx 容器里的 DNS 解析记录，让它重新找各个微服务的最新 IP
+          script: |                   # 如果只重启 link 服务（docker compose up -d --build --no-deps kiwi-link），必须重启 nginx 服务，清空了 Nginx 容器里的 DNS 解析记录，让它重新找各个微服务的最新 IP            
             cd /opt/kiwihub/
-            docker compose up -d --build
-            docker restart kiwi-nginx
+            if ! docker ps -a --format '{{.Names}}' | grep -q "nacos"; then
+              echo "========== 检测到是【首次部署】(无Nacos)，开始启动完整环境 =========="
+              docker compose up -d --build
+            else
+              echo "========== 检测到是【更新部署】，仅更新业务微服务，若nacos和nginx的配置改变也会重启 =========="
+              docker compose up -d --build
+              echo "========== 重启 Nginx 以刷新 DNS 缓存 =========="
+              docker restart kiwi-nginx
+            fi
+            
+            echo "========== 清理旧镜像释放磁盘空间 =========="
+            docker image prune -f
