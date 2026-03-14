@@ -24,7 +24,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                 .addPathPatterns("/**")
                 .excludePathPatterns(
                         // 公开接口：查看文章、评论、搜索（只读操作）
-                        "/articles/s",           // 获取文章列表
+                        "/articles/s/**",           // 获取文章列表
                         "/articles/{articleId}", // 获取文章详情
                         "/comments/roots",       // 获取一级评论列表
                         "/comments/replies",     // 获取楼中楼回复列表
