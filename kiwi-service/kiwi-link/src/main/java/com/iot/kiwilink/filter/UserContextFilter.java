@@ -31,8 +31,13 @@ public class UserContextFilter extends OncePerRequestFilter {
                 Object loginUser = session.getAttribute(SessionConstant.LOGIN_USER);
                 if (loginUser instanceof Map<?, ?> userMap) {
                     Object userId = userMap.get(SessionConstant.ATTRIBUTE_ID);
-                    if (userId instanceof String id) {
+                    if (userId instanceof Long id) {
                         UserContext.setUserId(id);
+                    } else if (userId instanceof String s) {
+                        try {
+                            UserContext.setUserId(Long.parseLong(s));
+                        } catch (NumberFormatException ignored) {
+                        }
                     }
                 }
             }
