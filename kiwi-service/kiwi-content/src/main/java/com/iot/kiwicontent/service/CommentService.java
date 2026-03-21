@@ -21,7 +21,7 @@ public interface CommentService {
      * @param commentDTO 评论DTO
      * @return 操作结果
      */
-    Result<Object> publishComment(String userId, CommentDTO commentDTO);
+    Result<Object> publishComment(Long userId, CommentDTO commentDTO);
 
     /**
      * 删除评论（软删除）
@@ -30,7 +30,7 @@ public interface CommentService {
      * @param commentId 评论ID
      * @return 操作结果
      */
-    Result<Object> deleteComment(String userId, String commentId);
+    Result<Object> deleteComment(Long userId, Long commentId);
 
     /**
      * 查询文章的一级评论列表
@@ -40,13 +40,19 @@ public interface CommentService {
      * @param pageSize 每页数量
      * @return 一级评论列表
      */
-    PageResult<CommentVO> getRootComments(String articleId, Integer pageNum, Integer pageSize);
+    PageResult<CommentVO> getRootComments(Long articleId, Integer pageNum, Integer pageSize);
 
     /**
      * 查询楼中楼回复列表（游标分页）
      *
-     * @param queryDTO 查询条件
-     * @return 回复列表
+     * <p>通用接口，通过 parentId 控制查询层级：</p>
+     * <ul>
+     *   <li>查二级评论：parentId = rootId</li>
+     *   <li>查三级回复：parentId = 某条二级评论的 id</li>
+     * </ul>
+     *
+     * @param queryDTO 查询条件，需传 rootId 和 parentId
+     * @return 回复列表，查二级时每条携带 replyCount
      */
     Result<Map<String, Object>> getReplies(CommentQueryDTO queryDTO);
 }

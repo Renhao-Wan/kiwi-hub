@@ -27,7 +27,7 @@ public class LoginInterceptor implements HandlerInterceptor {
             return true;
         }
 
-        String userId = UserContext.getUserId();
+        Long userId = UserContext.getUserId();
         if (userId != null) {
             return true;
         }

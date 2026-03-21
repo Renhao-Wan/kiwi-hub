@@ -14,13 +14,13 @@ import java.time.LocalDateTime;
 public class CommentVO {
 
     @Schema(description = "评论ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "文章ID")
-    private String articleId;
+    private Long articleId;
 
     @Schema(description = "评论者ID")
-    private String authorId;
+    private Long authorId;
 
     @Schema(description = "评论者昵称")
     private String authorName;
@@ -32,19 +32,22 @@ public class CommentVO {
     private String content;
 
     @Schema(description = "父评论ID")
-    private String parentId;
+    private Long parentId;
 
     @Schema(description = "父评论作者昵称")
     private String parentAuthorName;
 
     @Schema(description = "根评论ID")
-    private String rootId;
+    private Long rootId;
 
     @Schema(description = "评论状态：0-正常, 1-已删除")
     private Integer status;
 
     @Schema(description = "评论时间")
     private LocalDateTime createdAt;
+
+    @Schema(description = "三级回复总数（仅二级评论返回此字段）")
+    private Long replyCount;
 
     @Schema(description = "点赞数")
     private Integer likeCount;

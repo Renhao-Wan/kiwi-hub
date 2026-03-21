@@ -25,11 +25,11 @@ public class Comment {
 
     @Field("article_id")
     @Schema(description = "文章ID", required = true)
-    private String articleId;
+    private Long articleId;
 
     @Field("author_id")
     @Schema(description = "评论者ID", required = true)
-    private String authorId;
+    private Long authorId;
 
     @Schema(description = "评论内容", required = true)
     private String content;

@@ -30,17 +30,17 @@ public class UserRelation {
 
     @Field("follower_id")
     @Schema(description = "发起关注的用户ID（粉丝）", required = true)
-    private String followerId;
+    private Long followerId;
 
     @Field("following_id")
     @Schema(description = "被关注的用户ID（目标）", required = true)
-    private String followingId;
+    private Long followingId;
 
     @Field("created_at")
     @Schema(description = "关注时间")
     private LocalDateTime createdAt;
 
-    public UserRelation(String followerId, String followingId) {
+    public UserRelation(Long followerId, Long followingId) {
         this.followerId = followerId;
         this.followingId = followingId;
         this.createdAt = LocalDateTime.now();

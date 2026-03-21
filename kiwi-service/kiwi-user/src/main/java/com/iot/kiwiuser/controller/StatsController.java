@@ -26,7 +26,7 @@ public class StatsController {
      * @return 是否成功
      */
     @PostMapping("/article/count/{userId}/{delta}")
-    public Result<Object> updateArticleCount(@PathVariable String userId, @PathVariable int delta) {
+    public Result<Object> updateArticleCount(@PathVariable Long userId, @PathVariable int delta) {
         statsService.updateArticleCount(userId, delta);
         return Result.success();
     }

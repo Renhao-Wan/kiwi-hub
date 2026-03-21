@@ -17,7 +17,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 public class UserCardVO {
     @Schema(description = "用户ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "用户名", example = "john_doe")
     private String username;

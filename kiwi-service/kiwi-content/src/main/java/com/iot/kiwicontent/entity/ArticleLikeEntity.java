@@ -32,19 +32,19 @@ public class ArticleLikeEntity {
      * 点赞用户ID（外键关联 kiwi_user.user.id）
      */
     @TableField("user_id")
-    private String userId;
+    private Long userId;
 
     /**
      * 文章ID（外键关联 article.id）
      */
     @TableField("article_id")
-    private String articleId;
+    private Long articleId;
 
     /**
      * 文章作者ID（冗余字段，方便快速统计）
      */
     @TableField("author_id")
-    private String authorId;
+    private Long authorId;
 
     /**
      * 点赞时间

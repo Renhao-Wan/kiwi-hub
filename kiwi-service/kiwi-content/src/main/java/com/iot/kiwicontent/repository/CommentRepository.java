@@ -20,7 +20,7 @@ public interface CommentRepository extends MongoRepository<Comment, String> {
      * @param pageable 分页参数
      * @return 一级评论列表
      */
-    Page<Comment> findByArticleIdAndRootIdAndStatus(String articleId, String rootId, Integer status, Pageable pageable);
+    Page<Comment> findByArticleIdAndRootIdAndStatus(Long articleId, Long rootId, Integer status, Pageable pageable);
 
     /**
      * 查询指定根评论下的所有回复（游标分页）
@@ -48,7 +48,7 @@ public interface CommentRepository extends MongoRepository<Comment, String> {
      * @param authorId 作者ID
      * @return 是否存在
      */
-    boolean existsByArticleIdAndAuthorId(String articleId, String authorId);
+    boolean existsByArticleIdAndAuthorId(Long articleId, Long authorId);
 
     /**
      * 根据ID和作者ID查询评论
@@ -57,7 +57,7 @@ public interface CommentRepository extends MongoRepository<Comment, String> {
      * @param authorId 作者ID
      * @return 评论
      */
-    Comment findByIdAndAuthorId(String id, String authorId);
+    Comment findByIdAndAuthorId(String id, Long authorId);
 
     /**
      * 统计文章的评论数量
@@ -65,7 +65,7 @@ public interface CommentRepository extends MongoRepository<Comment, String> {
      * @param articleId 文章ID
      * @return 评论数量
      */
-    long countByArticleId(String articleId);
+    long countByArticleId(Long articleId);
 
     /**
      * 统计根评论下的回复数量

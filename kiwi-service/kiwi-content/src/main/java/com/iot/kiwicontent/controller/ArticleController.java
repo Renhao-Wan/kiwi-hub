@@ -30,15 +30,15 @@ public class ArticleController {
     @Operation(summary = "发布文章", description = "用户发布新文章")
     @PostMapping
     public Result<Object> publishArticle(@Parameter(description = "文章发布信息", required = true) @RequestBody @Validated PublishArticleDTO publishArticleDTO) {
-        String userId = UserContext.getUserId();
+        Long userId = UserContext.getUserId();
         articleService.publishArticle(userId, publishArticleDTO);
         return Result.success();
     }
 
     @Operation(summary = "删除文章", description = "用户删除自己的文章")
     @DeleteMapping
-    public Result<Object> deleteArticle(@Parameter(description = "文章ID", required = true) @RequestParam("articleId") String articleId){
-        String userId = UserContext.getUserId();
+    public Result<Object> deleteArticle(@Parameter(description = "文章ID", required = true) @RequestParam("articleId") Long articleId) {
+        Long userId = UserContext.getUserId();
         return articleService.deleteArticle(userId, articleId);
     }
 
@@ -58,7 +58,7 @@ public class ArticleController {
 
     @Operation(summary = "获取文章详情", description = "根据文章ID获取文章详细信息")
     @GetMapping("{articleId}")
-    public Result<Article> getArticleDetail(@Parameter(description = "文章ID", required = true) @PathVariable("articleId") String articleId) {
+    public Result<Article> getArticleDetail(@Parameter(description = "文章ID", required = true) @PathVariable("articleId") Long articleId) {
         return Result.success(articleService.getArticleDetail(articleId));
     }
 }

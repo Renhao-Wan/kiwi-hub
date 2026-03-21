@@ -11,10 +11,10 @@ import java.time.LocalDateTime;
 
 /**
  * 评论实体类
- * 
+ *
  * <p>对应 MySQL 表 `comment`，存储文章评论数据。</p>
- * <p>支持盖楼回复结构（parent_id, root_id）。</p>
- * 
+ * <p>支持盖楼回复结构（parent_id, root_id）。主键使用雪花算法，保证有序插入。</p>
+ *
  * @author wan
  */
 @Data
@@ -23,22 +23,22 @@ import java.time.LocalDateTime;
 public class CommentEntity {
 
     /**
-     * 评论ID (UUID)
+     * 评论ID（雪花算法，64位长整型，时间有序）
      */
-    @TableId(type = IdType.ASSIGN_UUID)
-    private String id;
+    @TableId(type = IdType.ASSIGN_ID)
+    private Long id;
 
     /**
      * 文章ID（外键关联 article.id）
      */
     @TableField("article_id")
-    private String articleId;
+    private Long articleId;
 
     /**
      * 评论者ID（外键关联 kiwi_user.user.id）
      */
     @TableField("author_id")
-    private String authorId;
+    private Long authorId;
 
     /**
      * 评论内容
@@ -50,13 +50,13 @@ public class CommentEntity {
      * 父评论ID（用于实现盖楼回复结构）
      */
     @TableField("parent_id")
-    private String parentId;
+    private Long parentId;
 
     /**
      * 根评论ID（用于快速定位评论串的根节点）
      */
     @TableField("root_id")
-    private String rootId;
+    private Long rootId;
 
     /**
      * 评论状态：0-正常, 1-已删除

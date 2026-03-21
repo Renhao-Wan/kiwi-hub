@@ -20,7 +20,7 @@ import java.util.List;
 @NoArgsConstructor
 public class ArticleListVO {
     @Schema(description = "文章ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "文章标题", example = "我的第一篇文章")
     private String title;

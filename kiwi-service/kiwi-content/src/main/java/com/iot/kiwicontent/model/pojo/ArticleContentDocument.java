@@ -31,7 +31,7 @@ public class ArticleContentDocument {
      */
     @Id
     @Schema(description = "文章ID", required = true)
-    private String articleId;
+    private Long articleId;
 
     /**
      * 作者ID（冗余，便于查询）
@@ -39,7 +39,7 @@ public class ArticleContentDocument {
     @Indexed
     @Field("author_id")
     @Schema(description = "作者ID", required = true)
-    private String authorId;
+    private Long authorId;
 
     /**
      * 文章标题

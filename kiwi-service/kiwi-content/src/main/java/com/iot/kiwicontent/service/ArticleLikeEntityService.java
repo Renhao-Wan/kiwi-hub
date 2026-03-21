@@ -18,5 +18,5 @@ public interface ArticleLikeEntityService extends IService<ArticleLikeEntity> {
      * @param articleId 文章ID
      * @return 是否删除成功
      */
-    boolean removeByUserIdAndArticleId(String userId, String articleId);
+    boolean removeByUserIdAndArticleId(Long userId, Long articleId);
 }

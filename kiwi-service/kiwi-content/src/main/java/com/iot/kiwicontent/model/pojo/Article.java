@@ -24,11 +24,11 @@ public class Article {
 
     @Id
     @Schema(description = "文章ID")
-    private String id;
+    private Long id;
 
     @Field("author_id")
     @Schema(description = "作者ID", required = true)
-    private String authorId;
+    private Long authorId;
 
     @TextIndexed(weight = 10)
     @Schema(description = "文章标题", required = true)

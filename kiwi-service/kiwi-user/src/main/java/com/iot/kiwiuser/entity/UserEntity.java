@@ -20,10 +20,10 @@ import java.time.LocalDateTime;
 public class UserEntity {
 
     /**
-     * 用户ID (UUID)
+     * 用户ID（自增主键）
      */
-    @TableId(type = IdType.ASSIGN_UUID)
-    private String id;
+    @TableId(type = IdType.AUTO)
+    private Long id;
 
     /**
      * 用户名

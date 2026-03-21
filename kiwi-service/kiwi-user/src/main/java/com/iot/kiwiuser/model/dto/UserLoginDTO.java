@@ -14,7 +14,7 @@ import lombok.Data;
 public class UserLoginDTO {
 
     @Schema(description = "用户ID")
-    private String id;
+    private Long id;
 
     @NotBlank(message = "用户名不能为空")
     @Schema(description = "用户名", required = true, example = "john_doe")

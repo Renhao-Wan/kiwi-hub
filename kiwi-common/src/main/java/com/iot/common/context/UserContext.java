@@ -8,17 +8,17 @@ import java.util.Optional;
  */
 public class UserContext {
 
-    private static final ThreadLocal<String> USER_ID_HOLDER = new ThreadLocal<>();
+    private static final ThreadLocal<Long> USER_ID_HOLDER = new ThreadLocal<>();
 
-    public static void setUserId(String userId) {
+    public static void setUserId(Long userId) {
         USER_ID_HOLDER.set(userId);
     }
 
-    public static String getUserId() {
+    public static Long getUserId() {
         return USER_ID_HOLDER.get();
     }
 
-    public static Optional<String> getOptionalUserId() {
+    public static Optional<Long> getOptionalUserId() {
         return Optional.ofNullable(USER_ID_HOLDER.get());
     }
 

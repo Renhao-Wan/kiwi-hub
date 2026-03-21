@@ -32,7 +32,7 @@ public class UserStatsEntity {
      * 用户ID（外键关联 user.id）
      */
     @TableField("user_id")
-    private String userId;
+    private Long userId;
 
     /**
      * 文章数

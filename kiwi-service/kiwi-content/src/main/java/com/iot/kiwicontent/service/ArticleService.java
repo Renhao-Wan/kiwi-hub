@@ -17,7 +17,7 @@ public interface ArticleService {
      * @param userId 用户ID
      * @param publishArticleDTO 发表文章参数
      */
-    void publishArticle(String userId, PublishArticleDTO publishArticleDTO);
+    void publishArticle(Long userId, PublishArticleDTO publishArticleDTO);
 
     /**
      * 删除文章
@@ -26,7 +26,7 @@ public interface ArticleService {
      * @param articleId 文章ID
      * @return 响应结果
      */
-    Result<Object> deleteArticle(String userId, String articleId);
+    Result<Object> deleteArticle(Long userId, Long articleId);
 
     /**
      * 获取文章列表
@@ -44,5 +44,5 @@ public interface ArticleService {
      * @param articleId 文章ID
      * @return 文章详情
      */
-    Article getArticleDetail(String articleId);
+    Article getArticleDetail(Long articleId);
 }

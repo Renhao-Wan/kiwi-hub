@@ -14,25 +14,21 @@ import org.springframework.stereotype.Service;
 @Service
 public class StatsServiceImpl extends ServiceImpl<UserStatsMapper, UserStatsEntity> implements StatsService, UserStatsEntityService {
 
-    // TODO 暂未考虑事务
     @Async("statsUpdateExecutor")
     @Override
-    public void updateFollowStats(String followerId, String followingId, int delta) {
+    public void updateFollowStats(Long followerId, Long followingId, int delta) {
         try {
             updateFollowingCount(followerId, delta);
             updateFollowerCount(followingId, delta);
-            log.debug("更新关注统计成功: follower={}, following={}, delta={}", 
-                followerId, followingId, delta);
+            log.debug("更新关注统计成功: follower={}, following={}, delta={}", followerId, followingId, delta);
         } catch (Exception e) {
-            log.error("更新关注统计失败: follower={}, following={}, delta={}", 
-                followerId, followingId, delta, e);
+            log.error("更新关注统计失败: follower={}, following={}, delta={}", followerId, followingId, delta, e);
         }
     }
 
-    // TODO 暂未考虑事务
     @Async("statsUpdateExecutor")
     @Override
-    public void updateArticleCount(String authorId, int delta) {
+    public void updateArticleCount(Long authorId, int delta) {
         try {
             updateArticleCountInternal(authorId, delta);
             log.debug("更新文章数成功: authorId={}, delta={}", authorId, delta);
@@ -41,21 +37,21 @@ public class StatsServiceImpl extends ServiceImpl<UserStatsMapper, UserStatsEnti
         }
     }
 
-    private void updateFollowingCount(String userId, int delta) {
+    private void updateFollowingCount(Long userId, int delta) {
         LambdaUpdateWrapper<UserStatsEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(UserStatsEntity::getUserId, userId)
                 .setSql("following_count = following_count + " + delta);
         getBaseMapper().update(null, updateWrapper);
     }
 
-    private void updateFollowerCount(String userId, int delta) {
+    private void updateFollowerCount(Long userId, int delta) {
         LambdaUpdateWrapper<UserStatsEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(UserStatsEntity::getUserId, userId)
                 .setSql("follower_count = follower_count + " + delta);
         getBaseMapper().update(null, updateWrapper);
     }
 
-    private void updateArticleCountInternal(String userId, int delta) {
+    private void updateArticleCountInternal(Long userId, int delta) {
         LambdaUpdateWrapper<UserStatsEntity> updateWrapper = new LambdaUpdateWrapper<>();
         updateWrapper.eq(UserStatsEntity::getUserId, userId)
                 .setSql("article_count = article_count + " + delta);

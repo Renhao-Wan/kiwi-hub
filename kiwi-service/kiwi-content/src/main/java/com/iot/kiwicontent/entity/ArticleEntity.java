@@ -20,16 +20,16 @@ import java.time.LocalDateTime;
 public class ArticleEntity {
 
     /**
-     * 文章ID (UUID)
+     * 文章ID（自增主键）
      */
-    @TableId(type = IdType.ASSIGN_UUID)
-    private String id;
+    @TableId(type = IdType.AUTO)
+    private Long id;
 
     /**
      * 作者ID（外键关联 kiwi_user.user.id）
      */
     @TableField("author_id")
-    private String authorId;
+    private Long authorId;
 
     /**
      * 文章标题

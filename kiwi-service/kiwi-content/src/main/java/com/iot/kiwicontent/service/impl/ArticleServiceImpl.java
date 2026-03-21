@@ -55,11 +55,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleEntity
      * @param publishArticleDTO 发表文章参数
      */
     @Override
-    public void publishArticle(String userId, PublishArticleDTO publishArticleDTO) {
+    public void publishArticle(Long userId, PublishArticleDTO publishArticleDTO) {
         LocalDateTime now = LocalDateTime.now();
-        String articleId = null;
+        Long articleId = null;
         try {
-            // 1. 插入 MySQL article 表（元数据）
             ArticleEntity articleEntity = new ArticleEntity()
                     .setAuthorId(userId)
                     .setTitle(publishArticleDTO.getTitle())
@@ -69,7 +68,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleEntity
             save(articleEntity);
             articleId = articleEntity.getId();
 
-            // 2. 插入 MySQL article_stats 表（初始统计）
             ArticleStatsEntity statsEntity = new ArticleStatsEntity()
                     .setArticleId(articleId)
                     .setViewCount(0)
@@ -79,7 +77,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleEntity
                     .setUpdatedAt(now);
             articleStatsEntityService.save(statsEntity);
 
-            // 3. 插入 MongoDB article_content_cache 集合（内容）
             ArticleContentDocument contentDoc = ArticleContentDocument.builder()
                     .articleId(articleId)
                     .authorId(userId)
@@ -99,13 +96,11 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleEntity
                     .build();
             articleContentRepository.save(contentDoc);
 
-            // 4. 通知用户服务增加文章数（更新 MySQL user_stats）
             userServiceClient.updateArticleCount(userId, 1);
 
             log.info("文章发布成功，articleId: {}, authorId: {}", articleId, userId);
         } catch (Exception e) {
             log.error("文章发布失败，已执行补偿操作，articleId: {}, authorId: {}", articleId, userId, e);
-            // 补偿：删除可能已经插入的 MySQL 记录
             if (articleId != null) {
                 try {
                     removeById(articleId);
@@ -128,26 +123,21 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleEntity
      * @return 响应结果
      */
     @Override
-    public Result<Object> deleteArticle(String userId, String articleId) {
-        // 检查文章是否存在且属于该用户
+    public Result<Object> deleteArticle(Long userId, Long articleId) {
         ArticleEntity articleEntity = getById(articleId);
         if (articleEntity == null || !userId.equals(articleEntity.getAuthorId())) {
             return Result.fail().message("文章不存在或无权删除该文章");
         }
 
         try {
-            // 删除 MySQL article 表（逻辑删除）
             articleEntity.setDeleted(1);
             updateById(articleEntity);
 
-            // 删除 MySQL article_stats 表（物理删除，也可保留）
             articleStatsEntityService.remove(new LambdaQueryWrapper<ArticleStatsEntity>()
                     .eq(ArticleStatsEntity::getArticleId, articleId));
 
-            // 删除 MongoDB 内容文档
             articleContentRepository.deleteByArticleId(articleId);
 
-            // 通知用户服务减少文章数
             userServiceClient.updateArticleCount(userId, -1);
 
             log.info("文章删除成功，articleId: {}, authorId: {}", articleId, userId);
@@ -175,7 +165,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleEntity
                 .orderByDesc(ArticleEntity::getUpdatedAt);
 
         if (currentUser) {
-            String userId = UserContext.getUserId();
+            Long userId = UserContext.getUserId();
             wrapper.eq(ArticleEntity::getAuthorId, userId);
         }
 
@@ -189,8 +179,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleEntity
                 .map(entity -> new ArticleListVO(
                         entity.getId(),
                         entity.getTitle(),
-                        null, // contentType 需要从 MongoDB 获取，列表页不需要
-                        null, // tags 同样需要从 MongoDB 获取，列表页不需要
+                        null,
+                        null,
                         entity.getUpdatedAt()))
                 .collect(Collectors.toList());
 
@@ -206,21 +196,18 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleEntity
      * @return 文章详情
      */
     @Override
-    public Article getArticleDetail(String articleId) {
-        // 1. 获取 MySQL 元数据
+    public Article getArticleDetail(Long articleId) {
         ArticleEntity entity = getById(articleId);
         if (entity == null || entity.getDeleted() == 1) {
             return Article.builder().build();
         }
 
-        // 2. 获取 MongoDB 内容
         ArticleContentDocument contentDoc = articleContentRepository.findByArticleId(articleId);
         if (contentDoc == null) {
             log.warn("文章内容不存在，articleId: {}", articleId);
             return Article.builder().build();
         }
 
-        // 3. 获取 MySQL 统计
         ArticleStatsEntity statsEntity = articleStatsEntityService.getOne(new LambdaQueryWrapper<ArticleStatsEntity>()
                 .eq(ArticleStatsEntity::getArticleId, articleId));
         ArticleStats stats = new ArticleStats();
@@ -230,7 +217,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, ArticleEntity
             stats.setCommentCount(statsEntity.getCommentCount());
         }
 
-        // 4. 组装 Article 对象（保持原有结构）
         return Article.builder()
                 .id(entity.getId())
                 .authorId(entity.getAuthorId())

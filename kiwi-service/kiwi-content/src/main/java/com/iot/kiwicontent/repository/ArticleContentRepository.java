@@ -10,18 +10,18 @@ import org.springframework.stereotype.Repository;
  * @author wan
  */
 @Repository
-public interface ArticleContentRepository extends MongoRepository<ArticleContentDocument, String> {
+public interface ArticleContentRepository extends MongoRepository<ArticleContentDocument, Long> {
 
     /**
      * 根据文章ID查找内容文档
      * @param articleId 文章ID
      * @return 文章内容文档
      */
-    ArticleContentDocument findByArticleId(String articleId);
+    ArticleContentDocument findByArticleId(Long articleId);
 
     /**
      * 根据文章ID删除内容文档
      * @param articleId 文章ID
      */
-    void deleteByArticleId(String articleId);
+    void deleteByArticleId(Long articleId);
 }

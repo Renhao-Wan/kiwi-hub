@@ -42,10 +42,10 @@ public class ArticleSearchServiceImpl implements ArticleSearchService {
         long total = countByTextIndex(searchDTO);
 
         // 2. 批量获取文章统计信息（从 MySQL）
-        List<String> articleIds = contentDocs.stream()
+        List<Long> articleIds = contentDocs.stream()
                 .map(ArticleContentDocument::getArticleId)
                 .collect(Collectors.toList());
-        Map<String, ArticleStatsEntity> statsMap = articleStatsEntityService.listByIds(articleIds)
+        Map<Long, ArticleStatsEntity> statsMap = articleStatsEntityService.listByIds(articleIds)
                 .stream()
                 .collect(Collectors.toMap(ArticleStatsEntity::getArticleId, stats -> stats));
 

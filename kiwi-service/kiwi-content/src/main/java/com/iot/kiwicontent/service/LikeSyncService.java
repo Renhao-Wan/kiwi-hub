@@ -1,8 +1,8 @@
 package com.iot.kiwicontent.service;
 
 public interface LikeSyncService {
-    
-    void syncLikeToDatabase(String userId, String articleId, String authorId);
-    
-    void syncUnlikeToDatabase(String userId, String articleId);
+
+    void syncLikeToDatabase(Long userId, Long articleId, Long authorId);
+
+    void syncUnlikeToDatabase(Long userId, Long articleId);
 }

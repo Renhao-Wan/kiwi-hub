@@ -20,7 +20,7 @@ public class User {
 
     @Id
     @Schema(description = "用户ID（与MySQL user表id关联）")
-    private String id;
+    private Long id;
 
     @Indexed(unique = true)
     @Schema(description = "用户名（去规范化存储，与MySQL同步）")

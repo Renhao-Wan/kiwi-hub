@@ -26,9 +26,9 @@ public class InteractionController {
 
     @Operation(summary = "点赞/取消点赞", description = "对指定文章进行点赞或取消点赞操作")
     @PostMapping("/like")
-    public Result<Object> toggleLike(@Parameter(description = "文章ID", required = true) @RequestParam("articleId") String articleId,
-                               @Parameter(description = "作者ID", required = true) @RequestParam("authorId") String authorId) {
-        String userId = UserContext.getUserId();
+    public Result<Object> toggleLike(@Parameter(description = "文章ID", required = true) @RequestParam("articleId") Long articleId,
+                               @Parameter(description = "作者ID", required = true) @RequestParam("authorId") Long authorId) {
+        Long userId = UserContext.getUserId();
         boolean isLiked = interactionService.toggleLike(userId, articleId, authorId);
         Map<String, Object> data = new HashMap<>();
         data.put("isLiked", isLiked);

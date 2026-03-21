@@ -15,10 +15,10 @@ import java.util.List;
 public class ArticleSearchResultVO {
 
     @Schema(description = "文章ID")
-    private String id;
+    private Long id;
 
     @Schema(description = "作者ID")
-    private String authorId;
+    private Long authorId;
 
     @Schema(description = "作者昵称")
     private String authorName;

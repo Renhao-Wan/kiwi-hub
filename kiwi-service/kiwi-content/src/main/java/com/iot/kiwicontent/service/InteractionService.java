@@ -12,5 +12,5 @@ public interface InteractionService {
      * @param authorId 作者ID
      * @return 点赞还是取消点赞
      */
-    boolean toggleLike(String userId, String articleId, String authorId);
+    boolean toggleLike(Long userId, Long articleId, Long authorId);
 }

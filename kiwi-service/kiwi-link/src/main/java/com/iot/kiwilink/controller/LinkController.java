@@ -24,7 +24,7 @@ public class LinkController {
 
     @Operation(summary = "生成短链接", description = "根据文章ID生成短链接")
     @PostMapping("/links/generate")
-    public Result<String> generateShortLink(@Parameter(description = "文章ID", required = true) @RequestParam("articleId") String articleId) {
+    public Result<String> generateShortLink(@Parameter(description = "文章ID", required = true) @RequestParam("articleId") Long articleId) {
         return Result.success(linkService.generateShortLink(articleId));
     }
 

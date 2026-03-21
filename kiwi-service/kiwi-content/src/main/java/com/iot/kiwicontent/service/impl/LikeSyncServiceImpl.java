@@ -29,16 +29,10 @@ public class LikeSyncServiceImpl extends ServiceImpl<ArticleLikeMapper, ArticleL
 
     private final ArticleStatsEntityService articleStatsEntityService;
 
-    /**
-     * 同步点赞到数据库（异步）
-     * @param userId 用户ID
-     * @param articleId 文章ID
-     * @param authorId 作者ID
-     */
     @Async("interactionExecutor")
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void syncLikeToDatabase(String userId, String articleId, String authorId) {
+    public void syncLikeToDatabase(Long userId, Long articleId, Long authorId) {
         try {
             ArticleLikeEntity like = new ArticleLikeEntity()
                     .setUserId(userId)
@@ -46,10 +40,7 @@ public class LikeSyncServiceImpl extends ServiceImpl<ArticleLikeMapper, ArticleL
                     .setAuthorId(authorId)
                     .setCreatedAt(LocalDateTime.now());
             save(like);
-
-            // 更新文章点赞计数
             articleStatsEntityService.updateLikeCount(articleId, 1);
-
             log.info("点赞数据同步完成: u={} -> a={}", userId, articleId);
         } catch (DataIntegrityViolationException e) {
             log.warn("重复点赞，已忽略: u={}, a={}", userId, articleId);
@@ -58,31 +49,23 @@ public class LikeSyncServiceImpl extends ServiceImpl<ArticleLikeMapper, ArticleL
         }
     }
 
-    /**
-     * 同步取消点赞到数据库（异步）
-     * @param userId 用户ID
-     * @param articleId 文章ID
-     */
     @Async("interactionExecutor")
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void syncUnlikeToDatabase(String userId, String articleId) {
+    public void syncUnlikeToDatabase(Long userId, Long articleId) {
         try {
-            // 删除点赞记录
             boolean removed = removeByUserIdAndArticleId(userId, articleId);
             if (removed) {
-                // 更新文章点赞计数
                 articleStatsEntityService.updateLikeCount(articleId, -1);
                 log.info("取消点赞同步完成: u={} -> a={}", userId, articleId);
-
-}
+            }
         } catch (Exception e) {
             log.error("取消点赞同步失败: u={}, a={}", userId, articleId, e);
         }
     }
 
     @Override
-    public boolean removeByUserIdAndArticleId(String userId, String articleId) {
+    public boolean removeByUserIdAndArticleId(Long userId, Long articleId) {
         LambdaQueryWrapper<ArticleLikeEntity> wrapper = new LambdaQueryWrapper<ArticleLikeEntity>()
                 .eq(ArticleLikeEntity::getUserId, userId)
                 .eq(ArticleLikeEntity::getArticleId, articleId);

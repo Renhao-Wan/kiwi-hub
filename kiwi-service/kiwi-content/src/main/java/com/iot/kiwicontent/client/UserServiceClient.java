@@ -9,5 +9,5 @@ import org.springframework.web.bind.annotation.PostMapping;
 public interface UserServiceClient {
 
     @PostMapping("/article/count/{userId}/{delta}")
-    Result<Object> updateArticleCount(@PathVariable("userId") String userId, @PathVariable("delta") int delta);
+    Result<Object> updateArticleCount(@PathVariable("userId") Long userId, @PathVariable("delta") int delta);
 }

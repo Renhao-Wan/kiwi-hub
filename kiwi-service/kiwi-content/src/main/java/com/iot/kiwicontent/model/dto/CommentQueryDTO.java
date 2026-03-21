@@ -14,13 +14,18 @@ public class CommentQueryDTO {
 
     @NotNull(message = "文章ID不能为空")
     @Schema(description = "文章ID", required = true)
-    private String articleId;
+    private Long articleId;
 
-    @Schema(description = "根评论ID（用于查询楼中楼回复）")
-    private String rootId;
+    @NotNull(message = "根评论ID不能为空")
+    @Schema(description = "根评论ID（一级评论的ID）")
+    private Long rootId;
+
+    @NotNull(message = "父评论ID不能为空")
+    @Schema(description = "父评论ID（查二级传 rootId，查三级传二级评论的 id）")
+    private Long parentId;
 
     @Schema(description = "游标ID（用于游标分页）")
-    private String cursorId;
+    private Long cursorId;
 
     @Schema(description = "每页数量", defaultValue = "20")
     private Integer pageSize = 20;

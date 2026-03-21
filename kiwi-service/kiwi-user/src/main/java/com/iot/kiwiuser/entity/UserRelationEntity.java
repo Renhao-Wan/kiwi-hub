@@ -32,13 +32,13 @@ public class UserRelationEntity {
      * 关注者ID（外键关联 user.id）
      */
     @TableField("follower_id")
-    private String followerId;
+    private Long followerId;
 
     /**
      * 被关注者ID（外键关联 user.id）
      */
     @TableField("following_id")
-    private String followingId;
+    private Long followingId;
 
     /**
      * 关注时间

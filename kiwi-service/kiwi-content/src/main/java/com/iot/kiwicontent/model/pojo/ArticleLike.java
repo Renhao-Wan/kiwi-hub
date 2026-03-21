@@ -29,21 +29,21 @@ public class ArticleLike {
 
     @Field("user_id")
     @Schema(description = "点赞用户ID", required = true)
-    private String userId;
+    private Long userId;
 
     @Field("article_id")
     @Schema(description = "被点赞文章ID", required = true)
-    private String articleId;
+    private Long articleId;
 
     @Field("author_id")
     @Schema(description = "文章作者ID（冗余字段，方便快速统计）", required = true)
-    private String authorId;
+    private Long authorId;
 
     @Field("create_time")
     @Schema(description = "点赞时间")
     private LocalDateTime createTime;
 
-    public ArticleLike(String userId, String articleId, String authorId) {
+    public ArticleLike(Long userId, Long articleId, Long authorId) {
         this.userId = userId;
         this.articleId = articleId;
         this.authorId = authorId;

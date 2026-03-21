@@ -15,12 +15,12 @@ public class CommentDTO {
 
     @NotNull(message = "文章ID不能为空")
     @Schema(description = "文章ID", required = true)
-    private String articleId;
+    private Long articleId;
 
     @NotBlank(message = "评论内容不能为空")
     @Schema(description = "评论内容", required = true)
     private String content;
 
     @Schema(description = "父评论ID（用于实现盖楼回复结构）")
-    private String parentId;
+    private Long parentId;
 }

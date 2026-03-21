@@ -1,7 +1,7 @@
 -- KiwiHub MySQL Schema
 -- 以 Java 实体类字段为准，无外键约束
--- Version: 1.1
--- Date: 2026-03-14
+-- Version: 1.2
+-- Date: 2026-03-21
 
 -- Database: kiwi_hub
 CREATE DATABASE IF NOT EXISTS `kiwi_hub` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
@@ -9,7 +9,7 @@ USE `kiwi_hub`;
 
 -- Table: user
 CREATE TABLE IF NOT EXISTS `user` (
-    `id`            VARCHAR(32)  NOT NULL COMMENT '用户ID（UUID）',
+    `id`            BIGINT       NOT NULL AUTO_INCREMENT COMMENT '用户ID（自增主键）',
     `username`      VARCHAR(50)  NOT NULL COMMENT '用户名',
     `email`         VARCHAR(100) NOT NULL COMMENT '邮箱',
     `password_hash` VARCHAR(255) NOT NULL COMMENT '密码哈希（BCrypt）',
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS `user` (
 -- Table: user_stats
 CREATE TABLE IF NOT EXISTS `user_stats` (
     `id`              BIGINT   NOT NULL AUTO_INCREMENT COMMENT '自增主键',
-    `user_id`         VARCHAR(32) NOT NULL COMMENT '用户ID',
+    `user_id`         BIGINT   NOT NULL COMMENT '用户ID',
     `article_count`   INT      NOT NULL DEFAULT 0 COMMENT '文章数',
     `following_count` INT      NOT NULL DEFAULT 0 COMMENT '关注数',
     `follower_count`  INT      NOT NULL DEFAULT 0 COMMENT '粉丝数',
@@ -39,10 +39,10 @@ CREATE TABLE IF NOT EXISTS `user_stats` (
 
 -- Table: user_relation
 CREATE TABLE IF NOT EXISTS `user_relation` (
-    `id`           BIGINT      NOT NULL AUTO_INCREMENT COMMENT '自增主键',
-    `follower_id`  VARCHAR(32) NOT NULL COMMENT '关注者ID',
-    `following_id` VARCHAR(32) NOT NULL COMMENT '被关注者ID',
-    `created_at`   DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '关注时间',
+    `id`           BIGINT   NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+    `follower_id`  BIGINT   NOT NULL COMMENT '关注者ID',
+    `following_id` BIGINT   NOT NULL COMMENT '被关注者ID',
+    `created_at`   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '关注时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_follower_following` (`follower_id`, `following_id`),
     INDEX `idx_follower_id` (`follower_id`),
@@ -52,8 +52,8 @@ CREATE TABLE IF NOT EXISTS `user_relation` (
 -- Table: article
 -- 注意：summary/status 字段已移除（不在实体类中）；文章内容存储于 MongoDB
 CREATE TABLE IF NOT EXISTS `article` (
-    `id`         VARCHAR(32)  NOT NULL COMMENT '文章ID（UUID）',
-    `author_id`  VARCHAR(32)  NOT NULL COMMENT '作者ID',
+    `id`         BIGINT       NOT NULL AUTO_INCREMENT COMMENT '文章ID（自增主键）',
+    `author_id`  BIGINT       NOT NULL COMMENT '作者ID',
     `title`      VARCHAR(200) NOT NULL COMMENT '文章标题',
     `created_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `updated_at` DATETIME     NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
@@ -65,13 +65,13 @@ CREATE TABLE IF NOT EXISTS `article` (
 
 -- Table: article_stats
 CREATE TABLE IF NOT EXISTS `article_stats` (
-    `id`            BIGINT      NOT NULL AUTO_INCREMENT COMMENT '自增主键',
-    `article_id`    VARCHAR(32) NOT NULL COMMENT '文章ID',
-    `view_count`    INT         NOT NULL DEFAULT 0 COMMENT '浏览量',
-    `like_count`    INT         NOT NULL DEFAULT 0 COMMENT '点赞数',
-    `comment_count` INT         NOT NULL DEFAULT 0 COMMENT '评论数',
-    `created_at`    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `updated_at`    DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    `id`            BIGINT   NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+    `article_id`    BIGINT   NOT NULL COMMENT '文章ID',
+    `view_count`    INT      NOT NULL DEFAULT 0 COMMENT '浏览量',
+    `like_count`    INT      NOT NULL DEFAULT 0 COMMENT '点赞数',
+    `comment_count` INT      NOT NULL DEFAULT 0 COMMENT '评论数',
+    `created_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    `updated_at`    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_article_id` (`article_id`),
     INDEX `idx_article_id` (`article_id`)
@@ -80,11 +80,11 @@ CREATE TABLE IF NOT EXISTS `article_stats` (
 -- Table: article_like
 -- author_id 为冗余字段，方便快速统计作者维度数据
 CREATE TABLE IF NOT EXISTS `article_like` (
-    `id`         BIGINT      NOT NULL AUTO_INCREMENT COMMENT '自增主键',
-    `user_id`    VARCHAR(32) NOT NULL COMMENT '点赞用户ID',
-    `article_id` VARCHAR(32) NOT NULL COMMENT '文章ID',
-    `author_id`  VARCHAR(32) NOT NULL COMMENT '文章作者ID（冗余字段）',
-    `created_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '点赞时间',
+    `id`         BIGINT   NOT NULL AUTO_INCREMENT COMMENT '自增主键',
+    `user_id`    BIGINT   NOT NULL COMMENT '点赞用户ID',
+    `article_id` BIGINT   NOT NULL COMMENT '文章ID',
+    `author_id`  BIGINT   NOT NULL COMMENT '文章作者ID（冗余字段）',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '点赞时间',
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_user_article` (`user_id`, `article_id`),
     INDEX `idx_article_id` (`article_id`),
@@ -92,16 +92,16 @@ CREATE TABLE IF NOT EXISTS `article_like` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='文章点赞表';
 
 -- Table: comment
--- root_id 用于快速定位评论串根节点；status: 0-正常，1-已删除
+-- root_id 用于快速定位评论串根节点；status: 0-正常，1-已删除；主键使用雪花算法保证有序插入
 CREATE TABLE IF NOT EXISTS `comment` (
-    `id`         VARCHAR(32) NOT NULL COMMENT '评论ID（UUID）',
-    `article_id` VARCHAR(32) NOT NULL COMMENT '文章ID',
-    `author_id`  VARCHAR(32) NOT NULL COMMENT '评论者ID',
-    `content`    TEXT        NOT NULL COMMENT '评论内容',
-    `parent_id`  VARCHAR(32) NULL     COMMENT '父评论ID（为空表示根评论）',
-    `root_id`    VARCHAR(32) NULL     COMMENT '根评论ID（快速定位评论串根节点）',
-    `status`     TINYINT     NOT NULL DEFAULT 0 COMMENT '评论状态：0-正常，1-已删除',
-    `created_at` DATETIME    NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '评论时间',
+    `id`         BIGINT   NOT NULL COMMENT '评论ID（雪花算法，时间有序）',
+    `article_id` BIGINT   NOT NULL COMMENT '文章ID',
+    `author_id`  BIGINT   NOT NULL COMMENT '评论者ID',
+    `content`    TEXT     NOT NULL COMMENT '评论内容',
+    `parent_id`  BIGINT   NULL     COMMENT '父评论ID（为空表示根评论）',
+    `root_id`    BIGINT   NULL     COMMENT '根评论ID（快速定位评论串根节点）',
+    `status`     TINYINT  NOT NULL DEFAULT 0 COMMENT '评论状态：0-正常，1-已删除',
+    `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '评论时间',
     PRIMARY KEY (`id`),
     INDEX `idx_article_id` (`article_id`),
     INDEX `idx_author_id` (`author_id`),

@@ -32,7 +32,7 @@ public class ArticleStatsEntity {
      * 文章ID（外键关联 article.id）
      */
     @TableField("article_id")
-    private String articleId;
+    private Long articleId;
 
     /**
      * 浏览量

@@ -47,7 +47,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, CommentEntity
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result<Object> publishComment(String userId, CommentDTO commentDTO) {
+    public Result<Object> publishComment(Long userId, CommentDTO commentDTO) {
         LocalDateTime now = LocalDateTime.now();
         CommentEntity comment = new CommentEntity()
                 .setArticleId(commentDTO.getArticleId())
@@ -87,7 +87,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, CommentEntity
      */
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result<Object> deleteComment(String userId, String commentId) {
+    public Result<Object> deleteComment(Long userId, Long commentId) {
         LambdaUpdateWrapper<CommentEntity> wrapper = new LambdaUpdateWrapper<CommentEntity>()
                 .eq(CommentEntity::getId, commentId)
                 .eq(CommentEntity::getAuthorId, userId)
@@ -99,7 +99,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, CommentEntity
             return Result.fail().message("删除失败：评论不存在、已删除或无权操作");
         }
 
-        // 获取评论所属文章ID，用于更新评论计数
         CommentEntity comment = getById(commentId);
         if (comment != null) {
             updateArticleCommentCount(comment.getArticleId(), -1);
@@ -117,14 +116,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, CommentEntity
      * @return PageResult<CommentVO>
      */
     @Override
-    public PageResult<CommentVO> getRootComments(String articleId, Integer pageNum, Integer pageSize) {
+    public PageResult<CommentVO> getRootComments(Long articleId, Integer pageNum, Integer pageSize) {
         LambdaQueryWrapper<CommentEntity> wrapper = new LambdaQueryWrapper<CommentEntity>()
                 .eq(CommentEntity::getArticleId, articleId)
                 .eq(CommentEntity::getStatus, 0)
-                .apply("id = root_id")  // 一级评论：id 等于 root_id
+                .apply("id = root_id")
                 .orderByDesc(CommentEntity::getCreatedAt);
-
-        Page<CommentEntity> page = new Page<>(pageNum, pageSize);
         page(page, wrapper);
 
         List<CommentVO> voList = page.getRecords().stream()
@@ -135,48 +132,75 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, CommentEntity
     }
 
     /**
-     * 获取楼中楼回复列表（root_id = id，parent_id != id）
-     * @param queryDTO 查询条件
-     * @return Result<Map<String, Object>>
+     * 查询楼中楼回复列表（游标分页）
+     *
+     * <p>通用接口，通过 parentId 控制查询层级：</p>
+     * <ul>
+     *   <li>查二级评论：parentId = rootId</li>
+     *   <li>查三级回复：parentId = 某条二级评论的 id</li>
+     * </ul>
+     * <p>查二级时，批量统计每条评论的三级回复数（replyCount），避免 N+1 查询。</p>
      */
     @Override
     public Result<Map<String, Object>> getReplies(CommentQueryDTO queryDTO) {
         LambdaQueryWrapper<CommentEntity> wrapper = new LambdaQueryWrapper<CommentEntity>()
                 .eq(CommentEntity::getRootId, queryDTO.getRootId())
+                .eq(CommentEntity::getParentId, queryDTO.getParentId())
                 .eq(CommentEntity::getStatus, 0)
-                .ne(CommentEntity::getParentId, queryDTO.getRootId()) // 排除根评论自身
                 .orderByAsc(CommentEntity::getId);
 
-        if (queryDTO.getCursorId() != null && !queryDTO.getCursorId().isEmpty()) {
+        if (queryDTO.getCursorId() != null) {
             wrapper.gt(CommentEntity::getId, queryDTO.getCursorId());
         }
 
-        // 查询总数
         long total = count(wrapper);
-
-        // 分页查询
         wrapper.last("LIMIT " + queryDTO.getPageSize());
         List<CommentEntity> comments = list(wrapper);
 
+        // 批量统计每条评论的直接子回复数，避免 N+1
+        Map<Long, Long> replyCountMap = batchCountReplies(
+                comments.stream().map(CommentEntity::getId).collect(Collectors.toList()),
+                queryDTO.getRootId()
+        );
+
         List<CommentVO> commentVos = comments.stream()
-                .map(this::convertToVO)
+                .map(comment -> {
+                    CommentVO vo = convertToVO(comment);
+                    vo.setReplyCount(replyCountMap.getOrDefault(comment.getId(), 0L));
+                    return vo;
+                })
                 .collect(Collectors.toList());
 
-        // 计算下一页的游标ID
-        String nextCursorId = null;
-        if (!comments.isEmpty()) {
-            nextCursorId = comments.get(comments.size() - 1).getId();
-        }
+        Long nextCursorId = comments.isEmpty() ? null : comments.get(comments.size() - 1).getId();
 
         Map<String, Object> result = new HashMap<>();
         if (nextCursorId != null) {
             result.put("nextCursorId", nextCursorId);
         }
-
-        long totalPages = total % queryDTO.getPageSize() == 0 ? total / queryDTO.getPageSize() : total / queryDTO.getPageSize() + 1;
-        PageResult<CommentVO> resultList = PageResult.of(commentVos, total, 1, queryDTO.getPageSize(), (int) totalPages);
-        result.put("result", resultList);
+        long totalPages = total % queryDTO.getPageSize() == 0
+                ? total / queryDTO.getPageSize()
+                : total / queryDTO.getPageSize() + 1;
+        result.put("result", PageResult.of(commentVos, total, 1, queryDTO.getPageSize(), (int) totalPages));
         return Result.success(result);
+    }
+
+    /**
+     * 批量统计指定评论列表各自的直接子回复数
+     *
+     * @param parentIds 父评论 ID 列表
+     * @param rootId    根评论 ID
+     * @return parentId -> replyCount 的映射
+     */
+    private Map<Long, Long> batchCountReplies(List<Long> parentIds, Long rootId) {
+        if (parentIds.isEmpty()) {
+            return java.util.Collections.emptyMap();
+        }
+        return list(new LambdaQueryWrapper<CommentEntity>()
+                .eq(CommentEntity::getRootId, rootId)
+                .in(CommentEntity::getParentId, parentIds)
+                .eq(CommentEntity::getStatus, 0))
+                .stream()
+                .collect(Collectors.groupingBy(CommentEntity::getParentId, Collectors.counting()));
     }
 
     /**
@@ -208,7 +232,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, CommentEntity
      * @param articleId 文章ID
      * @param delta 变化量（+1 或 -1）
      */
-    private void updateArticleCommentCount(String articleId, int delta) {
+    private void updateArticleCommentCount(Long articleId, int delta) {
         try {
             articleStatsEntityService.updateCommentCount(articleId, delta);
         } catch (Exception e) {

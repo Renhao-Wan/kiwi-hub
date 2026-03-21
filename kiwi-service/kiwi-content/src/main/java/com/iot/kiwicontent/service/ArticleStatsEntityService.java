@@ -18,7 +18,7 @@ public interface ArticleStatsEntityService extends IService<ArticleStatsEntity> 
      * @param delta 变化量（正数增加，负数减少）
      * @return 是否更新成功
      */
-    boolean updateCommentCount(String articleId, int delta);
+    boolean updateCommentCount(Long articleId, int delta);
 
     /**
      * 更新文章点赞计数
@@ -26,7 +26,7 @@ public interface ArticleStatsEntityService extends IService<ArticleStatsEntity> 
      * @param delta 变化量（正数增加，负数减少）
      * @return 是否更新成功
      */
-    boolean updateLikeCount(String articleId, int delta);
+    boolean updateLikeCount(Long articleId, int delta);
 
     /**
      * 更新文章浏览计数
@@ -34,5 +34,5 @@ public interface ArticleStatsEntityService extends IService<ArticleStatsEntity> 
      * @param delta 变化量（正数增加，负数减少）
      * @return 是否更新成功
      */
-    boolean updateViewCount(String articleId, int delta);
+    boolean updateViewCount(Long articleId, int delta);
 }

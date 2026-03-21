@@ -61,7 +61,7 @@ public class UserAuthController {
     @Operation(summary = "注销账号", description = "注销当前用户账号")
     @PostMapping("/delete")
     public Result<Object> delete(HttpSession session) {
-        String userId = UserContext.getUserId();
+        Long userId = UserContext.getUserId();
         userAuthService.delete(userId);
         session.invalidate();
         return Result.success().message("注销成功");

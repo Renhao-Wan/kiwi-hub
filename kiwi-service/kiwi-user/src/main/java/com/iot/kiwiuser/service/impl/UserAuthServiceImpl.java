@@ -128,7 +128,7 @@ public class UserAuthServiceImpl extends ServiceImpl<UserMapper, UserEntity> imp
      * @param userId 用户 ID
      */
     @Override
-    public void delete(String userId) {
+    public void delete(Long userId) {
         // 1. 删除MySQL用户统计数据
         LambdaQueryWrapper<UserStatsEntity> statsWrapper = new LambdaQueryWrapper<>();
         statsWrapper.eq(UserStatsEntity::getUserId, userId);
