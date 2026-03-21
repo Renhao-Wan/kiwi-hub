@@ -18,8 +18,8 @@ import java.time.LocalDateTime;
 @Data
 @Document(collection = "article_likes")
 @CompoundIndexes({
-        @CompoundIndex(name = "idx_user_article_unique", def = "{'userId': 1, 'articleId': 1}", unique = true),
-        @CompoundIndex(name = "idx_user_time", def = "{'userId': 1, 'createTime': -1}")
+        @CompoundIndex(name = "idx_user_article_unique", def = "{'user_id': 1, 'article_id': 1}", unique = true),
+        @CompoundIndex(name = "idx_user_time", def = "{'user_id': 1, 'create_time': -1}")
 })
 public class ArticleLike {
 

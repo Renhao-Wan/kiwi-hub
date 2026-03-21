@@ -18,9 +18,9 @@ import java.time.LocalDateTime;
 @Data
 @Document(collection = "user_relations")
 @CompoundIndexes({
-        @CompoundIndex(name = "unique_relation", def = "{'followerId': 1, 'followingId': 1}", unique = true),
-        @CompoundIndex(name = "idx_follower_time", def = "{'followerId': 1, 'createdAt': -1}"),
-        @CompoundIndex(name = "idx_following_time", def = "{'followingId': 1, 'createdAt': -1}")
+        @CompoundIndex(name = "unique_relation", def = "{'follower_id': 1, 'following_id': 1}", unique = true),
+        @CompoundIndex(name = "idx_follower_time", def = "{'follower_id': 1, 'created_at': -1}"),
+        @CompoundIndex(name = "idx_following_time", def = "{'following_id': 1, 'created_at': -1}")
 })
 public class UserRelation {
 

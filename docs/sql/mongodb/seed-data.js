@@ -361,19 +361,19 @@ db.user_relations.insertMany([
 // ============================================================
 // 创建索引（与 Java 实体类注解保持一致）
 // ============================================================
-db.users.createIndex({ username: 1 }, { unique: true });
-db.article_content_cache.createIndex({ author_id: 1 });
-db.article_content_cache.createIndex({ created_at: -1 });
+db.users.createIndex({ username: 1 }, { unique: true, name: 'idx_username_unique' });
+db.article_content_cache.createIndex({ author_id: 1 }, { name: 'idx_author_id' });
 db.article_content_cache.createIndex(
   { title: 'text', content: 'text', tags: 'text' },
-  { weights: { title: 10, content: 3, tags: 5 }, name: 'article_text_index' }
+  { weights: { title: 10, content: 3, tags: 5 }, name: 'ArticleContentDocument_TextIndex' }
 );
-db.comments.createIndex({ article_id: 1, author_id: 1 });
-db.article_likes.createIndex({ user_id: 1, article_id: 1 }, { unique: true });
-db.article_likes.createIndex({ user_id: 1, create_time: -1 });
-db.user_relations.createIndex({ follower_id: 1, following_id: 1 }, { unique: true });
-db.user_relations.createIndex({ follower_id: 1, created_at: -1 });
-db.user_relations.createIndex({ following_id: 1, created_at: -1 });
+db.comments.createIndex({ article_id: 1, author_id: 1 }, { name: 'article_id_author_id_index' });
+db.comments.createIndex({ root_id: 1 }, { name: 'idx_root_id' });
+db.article_likes.createIndex({ user_id: 1, article_id: 1 }, { unique: true, name: 'idx_user_article_unique' });
+db.article_likes.createIndex({ user_id: 1, create_time: -1 }, { name: 'idx_user_time' });
+db.user_relations.createIndex({ follower_id: 1, following_id: 1 }, { unique: true, name: 'unique_relation' });
+db.user_relations.createIndex({ follower_id: 1, created_at: -1 }, { name: 'idx_follower_time' });
+db.user_relations.createIndex({ following_id: 1, created_at: -1 }, { name: 'idx_following_time' });
 
 print('MongoDB 种子数据导入完成');
 print('users: '                  + db.users.countDocuments());

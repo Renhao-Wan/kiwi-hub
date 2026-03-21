@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 /**
@@ -15,6 +15,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 @Schema(description = "用户文档")
 @Data
 @Builder
+@CompoundIndex(name = "idx_username_unique", def = "{'username': 1}", unique = true)
 @Document(collection = "users")
 public class User {
 
@@ -22,7 +23,6 @@ public class User {
     @Schema(description = "用户ID（与MySQL user表id关联）")
     private Long id;
 
-    @Indexed(unique = true)
     @Schema(description = "用户名（去规范化存储，与MySQL同步）")
     private String username;
 

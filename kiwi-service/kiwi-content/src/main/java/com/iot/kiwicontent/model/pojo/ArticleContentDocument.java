@@ -4,7 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Builder;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
 import org.springframework.data.mongodb.core.index.TextIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
@@ -23,6 +23,7 @@ import java.util.List;
 @Data
 @Builder
 @Schema(description = "文章内容文档")
+@CompoundIndex(name = "idx_author_id", def = "{'author_id': 1}")
 @Document(collection = "article_content_cache")
 public class ArticleContentDocument {
 
@@ -36,7 +37,6 @@ public class ArticleContentDocument {
     /**
      * 作者ID（冗余，便于查询）
      */
-    @Indexed
     @Field("author_id")
     @Schema(description = "作者ID", required = true)
     private Long authorId;
@@ -79,7 +79,6 @@ public class ArticleContentDocument {
     /**
      * 创建时间（冗余，便于查询）
      */
-    @Indexed
     @Field("created_at")
     @Schema(description = "创建时间")
     private LocalDateTime createdAt;
@@ -87,7 +86,6 @@ public class ArticleContentDocument {
     /**
      * 更新时间（冗余，便于查询）
      */
-    @Indexed
     @Field("updated_at")
     @Schema(description = "更新时间")
     private LocalDateTime updatedAt;

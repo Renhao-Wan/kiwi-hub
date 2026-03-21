@@ -4,6 +4,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
@@ -15,7 +16,10 @@ import java.time.LocalDateTime;
  */
 @Schema(description = "文章评论")
 @Data
-@CompoundIndex(name = "article_id_author_id_index", def = "{'article_id': 1, 'author_id': 1}")
+@CompoundIndexes({
+        @CompoundIndex(name = "article_id_author_id_index", def = "{'article_id': 1, 'author_id': 1}"),
+        @CompoundIndex(name = "idx_root_id", def = "{'root_id': 1}")
+})
 @Document(collection = "comments")
 public class Comment {
 
