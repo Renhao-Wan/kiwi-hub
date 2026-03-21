@@ -25,8 +25,8 @@ services:
       - NACOS_CORE_AUTH_PLUGIN_NACOS_TOKEN_SECRET_KEY=VGhpc0lzQVNlY3JldEtleUZvck5hY29zVG9rZW5WYWxpZGF0aW9u
       # 极致 JVM 内存压缩
       # 默认是 2G/2G，这里我们压到 200M/200M
-      - JVM_XMS=512m
-      - JVM_XMX=512m
+      - JVM_XMS=200m
+      - JVM_XMX=200m
       - JVM_MaxDirectMemorySize=64m # 限制堆外内存
       - JVM_XMN=128m
       - JVM_MS=128m
@@ -51,9 +51,9 @@ services:
     deploy:
       resources:
         limits:
-          # Docker 硬限制：如果 Nacos 尝试使用超过 768M 内存，直接杀掉重启
+          # Docker 硬限制：如果 Nacos 尝试使用超过 516M 内存，直接杀掉重启
           # 保护 2G 服务器不被它拖垮
-          memory: 768M
+          memory: 516M
     networks:
       - kiwi-net
 
