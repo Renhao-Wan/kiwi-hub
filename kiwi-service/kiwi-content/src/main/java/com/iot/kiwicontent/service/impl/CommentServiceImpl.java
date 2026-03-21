@@ -122,13 +122,15 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, CommentEntity
                 .eq(CommentEntity::getStatus, 0)
                 .apply("id = root_id")
                 .orderByDesc(CommentEntity::getCreatedAt);
-        page(page, wrapper);
 
-        List<CommentVO> voList = page.getRecords().stream()
+        Page<CommentEntity> pageParam = new Page<>(pageNum, pageSize);
+        page(pageParam, wrapper);
+
+        List<CommentVO> voList = pageParam.getRecords().stream()
                 .map(this::convertToVO)
                 .collect(Collectors.toList());
 
-        return PageResult.of(voList, page.getTotal(), pageNum, pageSize, (int) page.getPages());
+        return PageResult.of(voList, pageParam.getTotal(), pageNum, pageSize, (int) pageParam.getPages());
     }
 
     /**
