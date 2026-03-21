@@ -25,8 +25,8 @@ services:
       - NACOS_CORE_AUTH_PLUGIN_NACOS_TOKEN_SECRET_KEY=VGhpc0lzQVNlY3JldEtleUZvck5hY29zVG9rZW5WYWxpZGF0aW9u
       # 极致 JVM 内存压缩
       # 默认是 2G/2G，这里我们压到 200M/200M
-      - JVM_XMS=200m
-      - JVM_XMX=200m
+      - JVM_XMS=512m
+      - JVM_XMX=512m
       - JVM_MaxDirectMemorySize=64m # 限制堆外内存
       - JVM_XMN=128m
       - JVM_MS=128m
@@ -38,11 +38,11 @@ services:
       # 9848 = 8848 + 1000
       - "9848:9848"
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8848/nacos/v1/console/health/readiness"]
-      interval: 10s
+      test: ["CMD", "curl", "-f", "http://localhost:8848/nacos/actuator/health"]
+      interval: 30s
       timeout: 10s
       retries: 10
-      start_period: 15s # 给它 15秒 的缓冲期再开始检查
+      start_period: 90s # 给它 90秒 的缓冲期再开始检查
       # - "9849:9849" # 这个端口通常用于集群同步，单机模式可不映射到宿主机，但在容器间网络要通
     volumes:
       # 挂载日志，方便排错
@@ -51,9 +51,9 @@ services:
     deploy:
       resources:
         limits:
-          # Docker 硬限制：如果 Nacos 尝试使用超过 512M 内存，直接杀掉重启
-          # 保护你的 2G 服务器不被它拖垮
-          memory: 512M
+          # Docker 硬限制：如果 Nacos 尝试使用超过 768M 内存，直接杀掉重启
+          # 保护 2G 服务器不被它拖垮
+          memory: 768M
     networks:
       - kiwi-net
 
