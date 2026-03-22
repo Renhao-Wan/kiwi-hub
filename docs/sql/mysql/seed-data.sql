@@ -8,21 +8,21 @@ USE `kiwi_hub`;
 
 -- ============================================================
 -- 1. user 表（12条）
--- 密码均为 BCrypt 加密的 "Password123!"
+-- 密码均为 BCrypt 加密的 "Password123"
 -- ============================================================
 INSERT INTO `user` (`id`, `username`, `email`, `password_hash`, `created_at`, `updated_at`, `deleted`) VALUES
-(1,  'alice_dev',    'alice@example.com',   '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhy2', '2025-01-10 08:00:00', '2025-01-10 08:00:00', 0),
-(2,  'bob_coder',    'bob@example.com',     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhy2', '2025-01-12 09:30:00', '2025-01-12 09:30:00', 0),
-(3,  'carol_writer', 'carol@example.com',   '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhy2', '2025-01-15 10:00:00', '2025-01-15 10:00:00', 0),
-(4,  'dave_arch',    'dave@example.com',    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhy2', '2025-01-18 11:00:00', '2025-01-18 11:00:00', 0),
-(5,  'eve_frontend', 'eve@example.com',     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhy2', '2025-01-20 12:00:00', '2025-01-20 12:00:00', 0),
-(6,  'frank_ops',    'frank@example.com',   '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhy2', '2025-01-22 13:00:00', '2025-01-22 13:00:00', 0),
-(7,  'grace_ml',     'grace@example.com',   '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhy2', '2025-01-25 14:00:00', '2025-01-25 14:00:00', 0),
-(8,  'henry_dba',    'henry@example.com',   '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhy2', '2025-01-28 15:00:00', '2025-01-28 15:00:00', 0),
-(9,  'iris_sec',     'iris@example.com',    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhy2', '2025-02-01 09:00:00', '2025-02-01 09:00:00', 0),
-(10, 'jack_mobile',  'jack@example.com',    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhy2', '2025-02-05 10:00:00', '2025-02-05 10:00:00', 0),
-(11, 'kate_cloud',   'kate@example.com',    '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhy2', '2025-02-08 11:00:00', '2025-02-08 11:00:00', 0),
-(12, 'leo_devops',   'leo@example.com',     '$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhy2', '2025-02-10 12:00:00', '2025-02-10 12:00:00', 0);
+(1,  'alice_dev',    'alice@example.com',   '$2a$10$SYljTpA6o6sOuOjQab8wAOZ1BR/WEtyMPXpzfSksIZINQSq9gHxIC', '2025-01-10 08:00:00', '2025-01-10 08:00:00', 0),
+(2,  'bob_coder',    'bob@example.com',     '$2a$10$SYljTpA6o6sOuOjQab8wAOZ1BR/WEtyMPXpzfSksIZINQSq9gHxIC', '2025-01-12 09:30:00', '2025-01-12 09:30:00', 0),
+(3,  'carol_writer', 'carol@example.com',   '$2a$10$SYljTpA6o6sOuOjQab8wAOZ1BR/WEtyMPXpzfSksIZINQSq9gHxIC', '2025-01-15 10:00:00', '2025-01-15 10:00:00', 0),
+(4,  'dave_arch',    'dave@example.com',    '$2a$10$SYljTpA6o6sOuOjQab8wAOZ1BR/WEtyMPXpzfSksIZINQSq9gHxIC', '2025-01-18 11:00:00', '2025-01-18 11:00:00', 0),
+(5,  'eve_frontend', 'eve@example.com',     '$2a$10$SYljTpA6o6sOuOjQab8wAOZ1BR/WEtyMPXpzfSksIZINQSq9gHxIC', '2025-01-20 12:00:00', '2025-01-20 12:00:00', 0),
+(6,  'frank_ops',    'frank@example.com',   '$2a$10$SYljTpA6o6sOuOjQab8wAOZ1BR/WEtyMPXpzfSksIZINQSq9gHxIC', '2025-01-22 13:00:00', '2025-01-22 13:00:00', 0),
+(7,  'grace_ml',     'grace@example.com',   '$2a$10$SYljTpA6o6sOuOjQab8wAOZ1BR/WEtyMPXpzfSksIZINQSq9gHxIC', '2025-01-25 14:00:00', '2025-01-25 14:00:00', 0),
+(8,  'henry_dba',    'henry@example.com',   '$2a$10$SYljTpA6o6sOuOjQab8wAOZ1BR/WEtyMPXpzfSksIZINQSq9gHxIC', '2025-01-28 15:00:00', '2025-01-28 15:00:00', 0),
+(9,  'iris_sec',     'iris@example.com',    '$2a$10$SYljTpA6o6sOuOjQab8wAOZ1BR/WEtyMPXpzfSksIZINQSq9gHxIC', '2025-02-01 09:00:00', '2025-02-01 09:00:00', 0),
+(10, 'jack_mobile',  'jack@example.com',    '$2a$10$SYljTpA6o6sOuOjQab8wAOZ1BR/WEtyMPXpzfSksIZINQSq9gHxIC', '2025-02-05 10:00:00', '2025-02-05 10:00:00', 0),
+(11, 'kate_cloud',   'kate@example.com',    '$2a$10$SYljTpA6o6sOuOjQab8wAOZ1BR/WEtyMPXpzfSksIZINQSq9gHxIC', '2025-02-08 11:00:00', '2025-02-08 11:00:00', 0),
+(12, 'leo_devops',   'leo@example.com',     '$2a$10$SYljTpA6o6sOuOjQab8wAOZ1BR/WEtyMPXpzfSksIZINQSq9gHxIC', '2025-02-10 12:00:00', '2025-02-10 12:00:00', 0);
 
 -- ============================================================
 -- 2. user_stats 表（12条，与 user 表一一对应）
