@@ -73,6 +73,9 @@ services:
       - /opt/kiwihub/nginx/html:/usr/share/nginx/html
       # 挂载日志
       - /opt/kiwihub/nginx/logs:/var/log/nginx
+      # 挂载ssl证书目录
+      - /etc/ssl/certs:/etc/ssl/certs
+      - /etc/ssl/private:/etc/ssl/private
     environment:
       - TZ=Asia/Shanghai
     deploy:
