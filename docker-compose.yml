@@ -65,7 +65,8 @@ services:
     container_name: kiwi-nginx
     restart: always
     ports:
-      - "80:80" # 只暴露 80 端口给公网
+      - "80:80" # 暴露 80 端口给公网
+      - "443:443" # 暴露 443 端口给公网
     volumes:
       # 挂载配置文件
       - /opt/kiwihub/nginx/config:/etc/nginx/conf.d
