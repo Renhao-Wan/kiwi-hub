@@ -18,4 +18,4 @@ spring:
       - nacos:kiwi-user-redis.yml
       - nacos:kiwi-user-mysql.yml
       - nacos:kiwi-redis-session.yml
-      - nacos:kiwi-knife4j.yml
+      - nacos:kiwi-knife4j-user.yml
