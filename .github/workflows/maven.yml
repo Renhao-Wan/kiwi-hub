@@ -2,7 +2,7 @@ name: Java CI with Maven
 
 on:
   push:
-    branches: [ "master", "main" , "feat/mysql-nginx-replace" ]
+    branches: [ "master", "main" , "feature-dev" ]
     paths-ignore: [ "*.md", "docs/**", "test-reports/**" ]
   pull_request:
     branches: [ "master", "main" ]
