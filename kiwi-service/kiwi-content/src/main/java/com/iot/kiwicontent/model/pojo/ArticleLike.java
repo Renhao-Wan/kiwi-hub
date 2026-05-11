@@ -1,5 +1,6 @@
 package com.iot.kiwicontent.model.pojo;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Data;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.CompoundIndex;
@@ -10,38 +11,39 @@ import org.springframework.data.mongodb.core.mapping.Field;
 import java.time.LocalDateTime;
 
 /**
- * 点赞表
+ * 文章点赞记录
  * @author wan
  */
+@Schema(description = "文章点赞记录")
 @Data
 @Document(collection = "article_likes")
 @CompoundIndexes({
-        // 核心索引：确保同一个用户对同一篇文章只能点赞一次
-        @CompoundIndex(name = "idx_user_article_unique", def = "{'userId': 1, 'articleId': 1}", unique = true),
-
-        // 辅助索引：用于查询“我最近赞过的文章”
-        @CompoundIndex(name = "idx_user_time", def = "{'userId': 1, 'createTime': -1}")
+        @CompoundIndex(name = "idx_user_article_unique", def = "{'user_id': 1, 'article_id': 1}", unique = true),
+        @CompoundIndex(name = "idx_user_time", def = "{'user_id': 1, 'create_time': -1}")
 })
 public class ArticleLike {
 
     @Id
+    @Schema(description = "点赞记录ID")
     private String id;
 
     @Field("user_id")
-    private String userId;
+    @Schema(description = "点赞用户ID", required = true)
+    private Long userId;
 
     @Field("article_id")
-    private String articleId;
+    @Schema(description = "被点赞文章ID", required = true)
+    private Long articleId;
 
-    // 冗余字段：方便快速统计“作者总获赞数”
     @Field("author_id")
-    private String authorId;
+    @Schema(description = "文章作者ID（冗余字段，方便快速统计）", required = true)
+    private Long authorId;
 
     @Field("create_time")
+    @Schema(description = "点赞时间")
     private LocalDateTime createTime;
 
-    // 构造函数
-    public ArticleLike(String userId, String articleId, String authorId) {
+    public ArticleLike(Long userId, Long articleId, Long authorId) {
         this.userId = userId;
         this.articleId = articleId;
         this.authorId = authorId;

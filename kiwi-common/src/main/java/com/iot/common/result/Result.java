@@ -1,22 +1,27 @@
 package com.iot.common.result;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * 全局统一的返回结果
+ * 统一响应结果
  * @author wan
  */
+@Schema(description = "统一响应结果")
 @SuppressWarnings("unused")
 @Getter
 @Setter
 @NoArgsConstructor(staticName = "of")
 public class Result<T> {
+    @Schema(description = "响应状态码", example = "20000")
     private Integer code;
 
+    @Schema(description = "响应消息", example = "操作成功")
     private String message;
 
+    @Schema(description = "响应数据")
     private T data;
 
     public static <T> Result<T> success() {

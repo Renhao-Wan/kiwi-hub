@@ -15,5 +15,5 @@ public interface ArticleLikeRepository extends MongoRepository<ArticleLike, Stri
      * @param articleId 文章ID
      * @return 删除的记录数
      */
-    long deleteByUserIdAndArticleId(String userId, String articleId);
+    long deleteByUserIdAndArticleId(Long userId, Long articleId);
 }

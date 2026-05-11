@@ -23,7 +23,7 @@ public interface ArticleRepository extends MongoRepository<Article, String> {
             sort = "{ 'updatedAt': -1 }",
             fields = "{'authorId': 1, 'title': 1, 'contentType': 1, 'tags': 1, 'updatedAt': 1}"
     )
-    Page<Article> findByAuthorId(String userId, Pageable pageable);
+    Page<Article> findByAuthorId(Long userId, Pageable pageable);
 
     /**
      * 根据文章ID和作者ID查询文章是否存在
@@ -32,5 +32,5 @@ public interface ArticleRepository extends MongoRepository<Article, String> {
      * @param userId 作者ID
      * @return 是否存在
      */
-    boolean existsByIdAndAuthorId(String articleId, String userId);
+    boolean existsByIdAndAuthorId(Long articleId, Long userId);
 }

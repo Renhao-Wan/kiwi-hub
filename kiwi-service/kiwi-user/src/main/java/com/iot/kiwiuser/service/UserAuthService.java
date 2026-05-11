@@ -29,5 +29,5 @@ public interface UserAuthService {
      * 注销账号
      * @param userId 用户 ID
      */
-    void delete(String userId);
+    void delete(Long userId);
 }

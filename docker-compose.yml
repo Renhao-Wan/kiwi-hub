@@ -1,0 +1,167 @@
+version: '3.8'
+
+networks:
+  kiwi-net:
+    driver: bridge
+
+services:
+  # ----------------------------------------------------
+  # Nacos 服务 (注册中心 & 配置中心)
+  # ----------------------------------------------------
+  nacos:
+    image: nacos/nacos-server:v2.4.1
+    container_name: nacos-standalone
+    restart: always
+    environment:
+      # 开启单机模式
+      - MODE=standalone
+      # 默认用户名/密码: nacos / nacos
+      - NACOS_AUTH_ENABLE=true
+      # 内部身份识别 Key (随意填)
+      - NACOS_CORE_AUTH_SERVER_IDENTITY_KEY=kiwihub_server_id
+      # 内部身份识别 Value (随意填)
+      - NACOS_CORE_AUTH_SERVER_IDENTITY_VALUE=kiwihub_server_value
+      # Token 密钥 (必须是 Base64 编码且足够长，否则会报错)
+      - NACOS_CORE_AUTH_PLUGIN_NACOS_TOKEN_SECRET_KEY=VGhpc0lzQVNlY3JldEtleUZvck5hY29zVG9rZW5WYWxpZGF0aW9u
+      # 极致 JVM 内存压缩
+      # 默认是 2G/2G，这里我们压到 200M/200M
+      - JVM_XMS=200m
+      - JVM_XMX=200m
+      - JVM_MaxDirectMemorySize=64m # 限制堆外内存
+      - JVM_XMN=128m
+      - JVM_MS=128m
+      - JVM_MMS=256m
+    ports:
+      # Nacos 控制台和 API 端口
+      - "8848:8848"
+      # Nacos 2.x gRPC 端口 (必须暴露，否则服务注册不上)
+      # 9848 = 8848 + 1000
+      - "9848:9848"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8848/nacos/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 90s # 给它 90秒 的缓冲期再开始检查
+      # - "9849:9849" # 这个端口通常用于集群同步，单机模式可不映射到宿主机，但在容器间网络要通
+    volumes:
+      # 挂载日志，方便排错
+      - /opt/kiwihub/nacos/logs:/home/nacos/logs
+      - /opt/kiwihub/nacos/data:/home/nacos/data
+    deploy:
+      resources:
+        limits:
+          # Docker 硬限制：如果 Nacos 尝试使用超过 516M 内存，直接杀掉重启
+          # 保护 2G 服务器不被它拖垮
+          memory: 516M
+    networks:
+      - kiwi-net
+
+  # ----------------------------------------------------
+  # Nginx (替代 Gateway，作为唯一入口)
+  # ----------------------------------------------------
+  nginx:
+    image: nginx:alpine
+    container_name: kiwi-nginx
+    restart: always
+    ports:
+      - "80:80" # 暴露 80 端口给公网
+      - "443:443" # 暴露 443 端口给公网
+    volumes:
+      # 挂载配置文件
+      - /opt/kiwihub/nginx/config:/etc/nginx/conf.d
+      # 挂载静态资源（文档导航页）
+      - /opt/kiwihub/nginx/html:/usr/share/nginx/html
+      # 挂载日志
+      - /opt/kiwihub/nginx/logs:/var/log/nginx
+      # 挂载ssl证书目录
+      - /etc/ssl/certs:/etc/ssl/certs
+      - /etc/ssl/private:/etc/ssl/private
+    environment:
+      - TZ=Asia/Shanghai
+    deploy:
+      resources:
+        limits:
+          memory: 64M # Nginx 非常省内存，64M 绰绰有余
+    networks:
+      - kiwi-net
+
+  # 3 个微服务
+  kiwi-user:
+    build: ./services/user  # 自动从这个目录找 Dockerfile 构建
+    container_name: kiwi-user
+    image: kiwi-user:latest
+    restart: always
+    environment:
+      # 这里对应上面 YAML 里的变量名
+      - NACOS_SERVER_ADDR=nacos:8848
+      - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=nacos:8848
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=nacos:8848
+      # 限制内存
+      - JVM_TOOL_OPTIONS=-Xms128m -Xmx256m
+      # 修正时区
+      - TZ=Asia/Shanghai
+    ports:
+      - "8070:8070"
+    deploy:
+      resources:
+        limits:
+          # 限制容器最大使用 312M 内存
+          memory: 312M
+    networks:
+      - kiwi-net
+    depends_on:
+      nacos:
+        condition: service_healthy
+  kiwi-content:
+    build: ./services/content  # 自动从这个目录找 Dockerfile 构建
+    container_name: kiwi-content
+    image: kiwi-content:latest
+    restart: always
+    environment:
+      # 这里对应上面 YAML 里的变量名
+      - NACOS_SERVER_ADDR=nacos:8848
+      - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=nacos:8848
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=nacos:8848
+      # 限制内存
+      - JVM_TOOL_OPTIONS=-Xms128m -Xmx256m
+      # 修正时区
+      - TZ=Asia/Shanghai
+    ports:
+      - "8010:8010"
+    deploy:
+      resources:
+        limits:
+          # 限制容器最大使用 312M 内存
+          memory: 312M
+    networks:
+      - kiwi-net
+    depends_on:
+      nacos:
+        condition: service_healthy
+  kiwi-link:
+    build: ./services/link  # 自动从这个目录找 Dockerfile 构建
+    container_name: kiwi-link
+    image: kiwi-link:latest
+    restart: always
+    environment:
+      # 这里对应上面 YAML 里的变量名
+      - NACOS_SERVER_ADDR=nacos:8848
+      - SPRING_CLOUD_NACOS_DISCOVERY_SERVER_ADDR=nacos:8848
+      - SPRING_CLOUD_NACOS_CONFIG_SERVER_ADDR=nacos:8848
+      # 限制内存
+      - JVM_TOOL_OPTIONS=-Xms128m -Xmx256m
+      # 修正时区
+      - TZ=Asia/Shanghai
+    ports:
+      - "8030:8030"
+    deploy:
+      resources:
+        limits:
+          # 限制容器最大使用 312M 内存
+          memory: 312M
+    networks:
+      - kiwi-net
+    depends_on:
+      nacos:
+        condition: service_healthy

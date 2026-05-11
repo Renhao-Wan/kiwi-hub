@@ -16,7 +16,7 @@ public interface UserRelationRepository extends MongoRepository<UserRelation, St
      * @param followerId 关注者 ID
      * @param followingId 被关注者 ID
      */
-    void deleteByFollowerIdAndFollowingId(String followerId, String followingId);
+    void deleteByFollowerIdAndFollowingId(Long followerId, Long followingId);
 
     /**
      * 根据关注者 ID 查询用户关系
@@ -24,7 +24,7 @@ public interface UserRelationRepository extends MongoRepository<UserRelation, St
      * @param pageable 分页参数
      * @return 用户关系列表
      */
-    Page<UserRelation> findByFollowerId(String followerId, Pageable pageable);
+    Page<UserRelation> findByFollowerId(Long followerId, Pageable pageable);
 
     /**
      * 根据被关注者 ID 获取用户关系
@@ -32,5 +32,5 @@ public interface UserRelationRepository extends MongoRepository<UserRelation, St
      * @param pageable 分页参数
      * @return 用户关系列表
      */
-    Page<UserRelation> findByFollowingId(String followingId, Pageable pageable);
+    Page<UserRelation> findByFollowingId(Long followingId, Pageable pageable);
 }

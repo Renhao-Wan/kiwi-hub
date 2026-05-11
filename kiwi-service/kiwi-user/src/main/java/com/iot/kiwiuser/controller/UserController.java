@@ -1,19 +1,23 @@
 package com.iot.kiwiuser.controller;
 
-import com.iot.common.constant.HttpHeader;
+import com.iot.common.context.UserContext;
 import com.iot.common.result.PageResult;
 import com.iot.common.result.Result;
 import com.iot.kiwiuser.model.dto.UserProfileDTO;
 import com.iot.kiwiuser.model.vo.UserCardVO;
 import com.iot.kiwiuser.model.vo.UserDetailVO;
 import com.iot.kiwiuser.service.UserService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 用户信息及关系相关接口
+ * 用户控制器
  * @author wan
  */
+@Tag(name = "用户管理", description = "用户信息查询、关注、粉丝等相关接口")
 @RestController
 @RequestMapping("/users")
 @RequiredArgsConstructor
@@ -21,84 +25,48 @@ public class UserController {
 
     private final UserService userService;
 
-    /**
-     * 获取当前用户信息
-     * @param userId 用户ID
-     * @return 用户信息
-     */
+    @Operation(summary = "获取当前用户信息", description = "获取当前登录用户的详细信息")
     @GetMapping("/me")
-    public Result<UserDetailVO> getCurrentUser(@RequestHeader(HttpHeader.USER_ID) String userId) {
-        // 处理获取当前用户信息逻辑
+    public Result<UserDetailVO> getCurrentUser() {
+        Long userId = UserContext.getUserId();
         return Result.success(userService.getCurrentUserDetail(userId));
     }
 
-    /**
-     * 更新当前用户信息
-     * @param userId 用户ID
-     * @param profileDTO 用户信息
-     * @return 更新结果
-     */
+    @Operation(summary = "更新用户资料", description = "更新当前登录用户的个人资料")
     @PutMapping("/me/profile")
-    public Result<Object> updateProfile(@RequestHeader(HttpHeader.USER_ID) String userId,
-                                        @ModelAttribute UserProfileDTO profileDTO) {
+    public Result<Object> updateProfile(@Parameter(description = "用户资料信息", required = true) @ModelAttribute UserProfileDTO profileDTO) {
+        Long userId = UserContext.getUserId();
         userService.updateProfile(userId, profileDTO);
-        // 处理更新个人信息逻辑
         return Result.success();
     }
 
-    /**
-     * 关注用户
-     * @param userId 用户ID
-     * @param followUserId 要关注的用户ID
-     * @return 关注结果
-     */
+    @Operation(summary = "关注用户", description = "关注指定用户")
     @PostMapping("/follow")
-    public Result<Object> follow(@RequestHeader(HttpHeader.USER_ID) String userId,
-                                 @RequestParam String followUserId) {
-        // 处理关注逻辑
+    public Result<Object> follow(@Parameter(description = "被关注用户的ID", required = true) @RequestParam Long followUserId) {
+        Long userId = UserContext.getUserId();
         return userService.follow(userId, followUserId);
     }
 
-    /**
-     * 取消关注用户
-     * @param userId 用户ID
-     * @param followUserId 要取消关注的用户ID
-     * @return 取消关注结果
-     */
+    @Operation(summary = "取消关注", description = "取消关注指定用户")
     @DeleteMapping("/follow")
-    public Result<Object> unfollow(@RequestHeader(HttpHeader.USER_ID) String userId,
-                                 @RequestParam String followUserId) {
-        // 处理取消关注逻辑
+    public Result<Object> unfollow(@Parameter(description = "被取消关注用户的ID", required = true) @RequestParam Long followUserId) {
+        Long userId = UserContext.getUserId();
         return userService.unfollow(userId, followUserId);
     }
 
-    /**
-     * 获取关注列表
-     * @param userId 用户ID
-     * @param pageNum 页码
-     * @param pageSize 页大小
-     * @return 关注列表
-     */
+    @Operation(summary = "获取关注列表", description = "分页获取当前用户的关注列表")
     @GetMapping("/following")
-    public Result<PageResult<UserCardVO>> getFollowingList(@RequestHeader(HttpHeader.USER_ID) String userId,
-                                                     @RequestParam(defaultValue = "1") Integer pageNum,
-                                                     @RequestParam(defaultValue = "10") Integer pageSize) {
-        // 处理获取关注列表逻辑
+    public Result<PageResult<UserCardVO>> getFollowingList(@Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer pageNum,
+                                                     @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") Integer pageSize) {
+        Long userId = UserContext.getUserId();
         return Result.success(userService.getFollowingList(userId, pageNum, pageSize));
     }
 
-    /**
-     * 获取粉丝列表
-     * @param userId 用户ID
-     * @param pageNum 页码
-     * @param pageSize 页大小
-     * @return 粉丝列表
-     */
+    @Operation(summary = "获取粉丝列表", description = "分页获取当前用户的粉丝列表")
     @GetMapping("/followers")
-    public Result<PageResult<UserCardVO>> getFollowersList(@RequestHeader(HttpHeader.USER_ID) String userId,
-                                                           @RequestParam(defaultValue = "1") Integer pageNum,
-                                                           @RequestParam(defaultValue = "10") Integer pageSize) {
-        // 处理获取粉丝列表逻辑
+    public Result<PageResult<UserCardVO>> getFollowersList(@Parameter(description = "页码") @RequestParam(defaultValue = "1") Integer pageNum,
+                                                           @Parameter(description = "每页数量") @RequestParam(defaultValue = "10") Integer pageSize) {
+        Long userId = UserContext.getUserId();
         return Result.success(userService.getFollowersList(userId, pageNum, pageSize));
     }
 }

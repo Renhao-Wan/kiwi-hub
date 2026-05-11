@@ -1,8 +1,11 @@
 package com.iot.kiwicontent.controller;
 
-import com.iot.common.constant.HttpHeader;
+import com.iot.common.context.UserContext;
 import com.iot.common.result.Result;
 import com.iot.kiwicontent.service.InteractionService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +16,7 @@ import java.util.Map;
  * 互动控制器
  * @author wan
  */
+@Tag(name = "互动管理", description = "文章点赞等互动相关接口")
 @RestController
 @RequestMapping("/interactions")
 @RequiredArgsConstructor
@@ -20,19 +24,12 @@ public class InteractionController {
 
     private final InteractionService interactionService;
 
-    /**
-     * 点赞/取消点赞
-     * @param userId 用户ID
-     * @param articleId 文章ID
-     * @param authorId 作者ID
-     * @return 结果
-     */
+    @Operation(summary = "点赞/取消点赞", description = "对指定文章进行点赞或取消点赞操作")
     @PostMapping("/like")
-    public Result<Object> toggleLike(@RequestHeader(HttpHeader.USER_ID) String userId,
-                               @RequestParam("articleId") String articleId,
-                               @RequestParam("authorId") String authorId) {
+    public Result<Object> toggleLike(@Parameter(description = "文章ID", required = true) @RequestParam("articleId") Long articleId,
+                               @Parameter(description = "作者ID", required = true) @RequestParam("authorId") Long authorId) {
+        Long userId = UserContext.getUserId();
         boolean isLiked = interactionService.toggleLike(userId, articleId, authorId);
-        // 返回给前端，前端根据 isLiked 变红或变灰，同时更新数字
         Map<String, Object> data = new HashMap<>();
         data.put("isLiked", isLiked);
         return Result.success(data);

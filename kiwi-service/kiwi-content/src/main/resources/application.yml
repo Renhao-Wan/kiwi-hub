@@ -5,5 +5,5 @@ spring:
   application:
     name: kiwi-hub-content
   profiles:
-    active: @spring.profiles.active@
-    include: connect
+    active: dev
+    include: connect,database

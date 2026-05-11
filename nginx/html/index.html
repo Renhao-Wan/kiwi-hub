@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>KiwiHub API 导航</title>
+    <style>
+        body { font-family: 'Segoe UI', sans-serif; text-align: center; padding-top: 50px; background-color: #f4f4f4; }
+        .container { max-width: 800px; margin: 0 auto; background: white; padding: 40px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        h1 { color: #333; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-top: 30px; }
+        .card { padding: 20px; border: 1px solid #eee; border-radius: 8px; transition: 0.3s; text-decoration: none; color: inherit; display: block; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); border-color: #409EFF; }
+        .icon { font-size: 40px; margin-bottom: 10px; display: block; }
+        .title { font-weight: bold; font-size: 18px; color: #409EFF; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>KiwiHub 微服务接口文档</h1>
+    <p>基于 Nginx 反向代理与 Knife4j 实现</p>
+
+    <div class="grid">
+        <a href="/knife/users/doc.html" class="card" target="_blank">
+            <span class="title">用户服务</span>
+        </a>
+
+        <a href="/knife/content/doc.html" class="card" target="_blank">
+            <span class="title">内容服务</span>
+        </a>
+
+        <a href="/knife/links/doc.html" class="card" target="_blank">
+            <span class="title">短链服务</span>
+        </a>
+    </div>
+</div>
+</body>
+</html>

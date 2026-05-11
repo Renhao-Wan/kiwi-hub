@@ -36,9 +36,7 @@ public class LinkServiceImpl implements LinkService {
      * @return 短链接
      */
     @Override
-    public String generateShortLink(String articleId) {
-        // 拼接一个长链接（或者是仅针对 articleId 生成）
-        // 如果目的是跳转到文章详情页
+    public String generateShortLink(Long articleId) {
         String longUrl = BASE_LONG_URL + articleId;
 
         // 为了避免冲突，可以加盐或者循环处理冲突
@@ -53,7 +51,6 @@ public class LinkServiceImpl implements LinkService {
     }
 
     /**
-     * TODO 完成布隆过滤器去重
      * 生成 Code 并处理布隆过滤器冲突
      */
     private String generateCode(String input) {

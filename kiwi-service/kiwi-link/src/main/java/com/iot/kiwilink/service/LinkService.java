@@ -11,7 +11,7 @@ public interface LinkService {
      * @param articleId 文章ID
      * @return 短链接
      */
-    String generateShortLink(String articleId);
+    String generateShortLink(Long articleId);
 
     /**
      * 获取长链接
