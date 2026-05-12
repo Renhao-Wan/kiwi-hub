@@ -11,7 +11,7 @@
     </parent>
 
     <groupId>com.iot</groupId>
-    <artifactId>KiwiHub</artifactId>
+    <artifactId>kiwi-hub-backend</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
